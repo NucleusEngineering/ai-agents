@@ -28,7 +28,7 @@ django-bootstrap4==23.2
 django-debug-toolbar==4.3.0
 django-extensions==3.2.3
 djangorestframework==3.14.0
-dnspython==2.0.0
+dnspython==2.6.1
 docstring-parser==0.16
 exceptiongroup==1.2.0
 factory-boy==3.3.0
