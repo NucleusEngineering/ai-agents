@@ -1,0 +1,21 @@
+<!-- Using HTMX, write a simple webpage that has a chat box in the bottom right corner where users can send and receive messages. It should be asynchronous and call /chat as an endpoint. Should use JSON payload -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTMX Chat</title>
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+</head>
+<body>
+  <div class="chat-box">
+    <form hx-post="/chat" hx-target="#chat-messages"  hx-indicator="#loading-indicator" hx-swap="afterend">
+      <input id="prompt" name="prompt" type="text" placeholder="Type your message here...">
+      <button type="submit" hx-on::after-request="this.reset()">Send Message</button>
+      <img id="loading-indicator"  class="htmx-indicator" style="width: 64px;" src="/static/loading.svg"/>
+      <output id="chat-messages"></output>
+    </form>    
+  </div>
+</body>
+</html>
