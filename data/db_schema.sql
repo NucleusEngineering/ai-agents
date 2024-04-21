@@ -27,6 +27,7 @@ CREATE TABLE ingame_products (
 );
 
 CREATE TABLE user_orders (
+  order_id SERIAL PRIMARY KEY,
   user_id SERIAL REFERENCES users(user_id),
   game_id SERIAL REFERENCES available_games(game_id),
   product_id SERIAL,

@@ -1,17 +1,17 @@
 import vertexai
-import requests, os
+import os
 
 from vertexai.generative_models import (
-    Content,
     FunctionDeclaration,
     GenerationConfig,
     GenerativeModel,
     Part,
     Tool,
 )
-import psycopg2
-
 from flask import Flask, request, jsonify, render_template
+from utils import function_calling_tools
+
+# Environment variables
 
 PROJECT_ID = "dn-demos"
 LOCATION = "us-central1"  # @param {type:"string"}
@@ -71,16 +71,18 @@ def init():
 
     place_order = FunctionDeclaration(
         name="place_order",
-        description="Place an order of Gems, Coins or Gold for a games: Clash of Clans, Clash Royale, Boom Beach, Brawl Stars and Hay Day",
+        description="Place an order for products like Cloud Gem or Cloud Gold for games such as Droid Shooter or Cloud Royale games. Product names shoud be sigular and not plural.",
         parameters={
             "type": "object",
             "properties": {
-                "product": {"type": "string", "description": "Product name"},
-                "game": {"type": "string", "description": "Game name"},
+                "game": {"type": "string", "description": "The name of the game to which the produced will be added"},
+                "product": {"type": "string", "description": "The name of the product to be purchased"},
+                "quantity": {"type": "integer", "description": "Quantity of the purchased product"},
             },
             "required": [
+                "game",
                 "product",
-                "game"
+                "quantity",
             ]
         },
     )
@@ -103,96 +105,6 @@ def init():
 
     return model
 
-def place_order(user_id, product, game):
-    try:
-        # Write a function that inserts a new row into user_orders table in ai_agent postgresql database
-        conn = psycopg2.connect(
-            host="localhost",
-            database="ai_agent",
-            user="postgres",
-            password="postgres",
-        )
-
-        # Create a cursor
-        cur = conn.cursor()
-
-        # Execute the query
-        cur.execute(
-            "INSERT INTO user_orders (user_id, product, game) VALUES (%s, %s, %s)",
-            (user_id, product, game),
-        )
-
-        # Commit the transaction
-        conn.commit()
-
-        # Close the connection
-        conn.close()
-
-        return 1
-    except Exception as e:
-        print(e)
-        return 0
-
-def get_user_games(user_id):
-    # Write a function that fetches all fields from user_games table in ai_agent postgresql database by user_id primary key
-    try:
-        # Connect to the database
-        conn = psycopg2.connect(
-            host="localhost",
-            database="ai_agent",
-            user="postgres",
-            password="postgres",
-        )
-
-        # Create a cursor
-        cur = conn.cursor()
-
-        # Execute the query
-        cur.execute("SELECT ag.title, ag.description FROM public.user_games AS ug LEFT JOIN available_games as ag ON ug.game_id = ag.game_id where ug.user_id = %s", (user_id,))
-
-        # Fetch the results
-        results = cur.fetchall()
-
-        # Close the connection
-        conn.close()
-
-        return results
-    except Exception as e:
-        print(e)
-        return 0
-
-def get_user_tickets(user_id):
-    # Write a function that fetches all fields from user_tickets table in ai_agent postgresql database by user_id primary key
-    try:
-        # Connect to the database
-        conn = psycopg2.connect(
-            host="localhost",
-            database="ai_agent",
-            user="postgres",
-            password="postgres",
-        )
-
-        # Create a cursor
-        cur = conn.cursor()
-
-        # Execute the query
-        cur.execute("SELECT * FROM user_tickets WHERE user_id = %s", (user_id,))
-
-        # Fetch the results
-        results = cur.fetchall()
-
-        # Close the connection
-        conn.close()
-
-        return results
-    except Exception as e:
-        print(e)
-        return 0
-
-def request_human_support(user_id):
-    # Swap gemini based chat to human based chat - redirect?
-    return 0
-
 def init_chat(model, user_id):
     chat_client = init()
 
@@ -202,49 +114,6 @@ def init_chat(model, user_id):
     chat_client = model.start_chat(history=history_clients[user_id])
     return chat_client
 
-def call_function(function_name, params):
-    # TODO: hardcoded value for now
-    params['user_id'] = 1
-
-    try:
-        return globals()[function_name](**params)
-    except Exception as e:
-        print(e)
-        return 0
-
-def extract_function(response):
-
-    try:
-        for part in response.candidates[0].content.parts: 
-            if part.function_call.name:
-                return part.function_call.name
-    except Exception as e:
-        print(e)
-
-    return None
-
-def extract_params(response):
-    params = {}
-
-    try:
-        for part in response.candidates[0].content.parts: 
-            for key, value in part.function_call.args.items():
-                params[key[9:]] = value
-    except Exception as e:
-        print(e)
-        params = {}
-
-    return params
-
-def extract_text(response):
-    try:
-        for part in response.candidates[0].content.parts: 
-            if part.text:
-                return part.text
-    except Exception as e:
-        return ""
-
-# Initialize the model!!!!
 model = init()
 
 @app.route("/chat", methods=["POST"])
@@ -256,13 +125,15 @@ def chat():
     response = chat.send_message([COC_FAQ, prompt])
     history_clients[user_id] = chat.history
 
-    function_params = extract_params(response)
-    function_name = extract_function(response)
-    response_text = extract_text(response)
+    print(response)
+
+    function_params = function_calling_tools.extract_params(response)
+    function_name = function_calling_tools.extract_function(response)
+    response_text = function_calling_tools.extract_text(response)
 
     if function_name:
         print("Calling  " + function_name)
-        func_response = call_function(function_name, function_params)
+        func_response = function_calling_tools.call_function(function_name, function_params)
         response = chat.send_message(
                 Part.from_function_response(
                 name=function_name,
@@ -272,7 +143,7 @@ def chat():
             ),
         )
 
-        response_text += '. ' + extract_text(response)
+        response_text += '. ' + function_calling_tools.extract_text(response)
     else:
         print('No function to be called...')
 

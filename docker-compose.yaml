@@ -1,7 +1,7 @@
 version: '3.8'
 services:
    postgres_db:
-      image: postgres:latest
+      image: postgres:bullseye
       container_name: pgdb 
       restart: always
       environment:
@@ -10,4 +10,16 @@ services:
       ports:
       - '5432:5432'
       volumes:
-      - ./pgdata:/var/lib/postgresql/data
+      - ./pg-data:/var/lib/postgresql/data
+
+   pgadmin:
+      image: dpage/pgadmin4
+      container_name: pgadmin4_container
+      restart: always
+      ports:
+      - "8081:80"
+      environment:
+         PGADMIN_DEFAULT_EMAIL: pgadmin@nikolaidan.altostrat.com
+         PGADMIN_DEFAULT_PASSWORD: postgres
+      volumes:
+      - ./pgadmin-data:/var/lib/pgadmin
