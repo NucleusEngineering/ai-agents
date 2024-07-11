@@ -60,7 +60,7 @@ function postRecodingCallback(response) {
     const subject = document.querySelector(".response-target");
     subject.append(divFragment);
 
-    enableFormFields();
+    enableFormFields(false);
     enableRecordButton();
 }
 
@@ -102,9 +102,11 @@ function scrollToBottom() {
     $('#chat-history')[0].scrollTop = $('#chat-history')[0].scrollHeight;
 }
 
-function enableFormFields() {
+function enableFormFields(focus=true) {
     $("#chat-form > input[type='text'], #chat-form > button").attr('disabled', false);    
-    $('#prompt').focus();
+    if(focus) {
+        $('#prompt').focus();
+    }
 }
 
 function disableFormFields() {
