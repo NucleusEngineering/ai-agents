@@ -41,6 +41,7 @@ else
 fi
 
 if [ "$1" == "debug" ]; then
+  export DEV_MODE=true
   /venv/bin/python3 -m flask run --host=0.0.0.0 --port=8080 --debugger --reload
 else
   /venv/bin/python3 -m flask run --host=0.0.0.0 --port=8080

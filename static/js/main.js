@@ -17,6 +17,8 @@ limitations under the License.
 let mediaRecorder;
 let audioChunks = [];
 
+window.oncontextmenu = function() { return false; }
+
 async function startRecording(self, event) {
     if ("buttons" in event) {
         if (event.buttons == 2)

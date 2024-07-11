@@ -215,18 +215,22 @@ def get_color(char_name):
 
 @app.route("/", methods=["GET"])
 def home():
-    # with open("templates/index.html", mode='r') as file: #
-    #     data = file.read()
+    if os.environ.get("DEV_MODE") == "true":
+        with open("templates/index.html", mode='r') as file: #
+            data = file.read()
 
-    # return data
+        return data
+    
     return render_template("index.html")
 
 @app.route("/model", methods=["GET"])
 def model():
-    # with open("templates/model.html", mode='r') as file:
-    #     data = file.read()
+    if os.environ.get("DEV_MODE") == "true":
+        with open("templates/model.html", mode='r') as file:
+            data = file.read()
 
-    # return data
+        return data
+    
     return render_template("model.html")
 
 @app.route("/version", methods=["GET"])
