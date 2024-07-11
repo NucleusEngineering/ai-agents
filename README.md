@@ -56,13 +56,14 @@ You can interact with the AI Agent both via writing and voice. To use voice, you
 
 Information that AI Agent can discuss with you is:
 
-* **Games:**  Get the information about the games you own.
-* **Order Information:**  Get the lowdown on your Cloud Royale and Droid Shooter orders.
-* **Support Tickets:** Need help? Check the status of your support tickets right here.
-* **Character Showcase:** See your awesome character in all its glory.
-* **Color Palettes:** Looking to spruce up your character? Get suggestions for cool color schemes.
-* **Tips & Tricks:**  Level up your game with expert tips and tricks for Cloud Royale and Droid Shooter by viewing suggested replays.
-
+* **Games:**  Get the information about the games you own. E.g.: `What games do I own?`
+* **Order Information:**  Get the lowdown on your Cloud Royale and Droid Shooter orders. E.g.: `Show me my orders for Droid Shooter`
+* **Support Tickets:** Need help? Check the status of your support tickets right here. E.g.: `What are my support tickets?`
+* **Character Showcase:** See your awesome character in all its glory. E.g.: `Show me my character`
+* **Color Palettes:** Looking to spruce up your character? Get suggestions for cool color schemes. E.g.: `Change the color palette to the colors of Google for my character called Character B`
+* **Tips & Tricks:**  Level up your game with expert tips and tricks for Cloud Royale and Droid Shooter by viewing suggested replays. E.g.: `I'm looking to improve my game strategy in Cloud Royale.`
+* **Generate new avatar:**  Get a new avatar with help of Generative AI. E.g.: `Create me a new avatar that looks like an orange cat.`
+* **Ask specific questions (RAG):**  Get grounded answers based on the specific documents supplied to Gemini. E.g.: `How do I assemble the artifact in Cloud Royale?`
 
 ## License
 
