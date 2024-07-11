@@ -49,6 +49,7 @@ Built with Python, it utilizes [AlloyDB](https://cloud.google.com/alloydb) when 
 2. Customize `terraform.tfvars` based on `terraform.tfvars.template`.
 3. Run: `terraform init`, `terraform plan`, `terraform apply`
 4. In the root project folder, execute Cloud Build: `gcloud builds submit --config cloudbuild.yaml --substitutions _SERVICE_NAME=your-service-name,_REGION=your-gcp-region`
+5. Get the URL where the demo was deployed: `gcloud run services list | grep -i ai-agent`
 
 ## Usage
 
@@ -64,6 +65,9 @@ Information that AI Agent can discuss with you is:
 * **Tips & Tricks:**  Level up your game with expert tips and tricks for Cloud Royale and Droid Shooter by viewing suggested replays. E.g.: `I'm looking to improve my game strategy in Cloud Royale.`
 * **Generate new avatar:**  Get a new avatar with help of Generative AI. E.g.: `Create me a new avatar that looks like an orange cat.`
 * **Ask specific questions (RAG):**  Get grounded answers based on the specific documents supplied to Gemini. E.g.: `How do I assemble the artifact in Cloud Royale?`
+
+# Example of 3D character representation:
+![3D Character](static/images/3d_character_demo.png "3D Character preview")
 
 ## License
 

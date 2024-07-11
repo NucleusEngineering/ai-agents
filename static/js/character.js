@@ -97,7 +97,7 @@ function init() {
     container.appendChild( renderer.domElement );
 
     controls = new OrbitControls( camera, renderer.domElement );
-    controls.listenToKeyEvents( window ); // optional
+    // controls.listenToKeyEvents( window ); // optional
 
     controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
     controls.dampingFactor = 0.05;
