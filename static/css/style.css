@@ -23,7 +23,7 @@ body {
 }
 
 h1 {
-    font-size: 3.6em;
+    font-size: 2.8em;
     margin: 0;    
 }
 
@@ -70,6 +70,7 @@ ul li img {
 }
 
 .hero {    
+    margin-top: 3%;
     margin-bottom: 7%;    
 }
 
@@ -79,7 +80,7 @@ ul li img {
     width: 100%;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     border-radius: 5px;
-    height: 534px;
+    height: 536px;
     position: relative;
 }
 
@@ -272,13 +273,13 @@ table tbody tr.active-row {
 
 #myCharacterContainer {
     width: 640px;
-    height: 480px;
+    height: 640px;
 }
 
 @media (min-width: 800px) {
     .chat-container {
         width: 90%;
-        height: 450px;
+        height: 640px;
     }
 
     .chat-history {
