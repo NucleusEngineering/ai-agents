@@ -16,7 +16,6 @@ import traceback
 import vertexai
 import os
 import logging
-import subprocess
 
 import vertexai.preview.generative_models as generative_models
 
@@ -27,7 +26,7 @@ from vertexai.preview.generative_models import (
     Tool,
 )
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from helpers import db_helper, function_calling_helper, generic_helper, rag_helper
 
 from services.user import User as UserService
@@ -131,7 +130,7 @@ user = UserModel.from_dict({
 app = Flask(
     __name__,
     instance_relative_config=True,
-#    template_folder="templates",
+    template_folder="templates",
 )
 
 # Our main chat handler
@@ -212,19 +211,19 @@ def get_color(char_name):
 
 @app.route("/", methods=["GET"])
 def home():
-    with open("templates/index.html", mode='r') as file: #
-        data = file.read()
+    # with open("templates/index.html", mode='r') as file: #
+    #     data = file.read()
 
-    return data
-    # return render_template("index.html")
+    # return data
+    return render_template("index.html")
 
 @app.route("/model", methods=["GET"])
 def model():
-    with open("templates/model.html", mode='r') as file:
-        data = file.read()
+    # with open("templates/model.html", mode='r') as file:
+    #     data = file.read()
 
-    return data
-    # return render_template("model.html")
+    # return data
+    return render_template("model.html")
 
 @app.route("/version", methods=["GET"])
 def version():
@@ -234,5 +233,4 @@ def version():
 
 if __name__ == "__main__":
     os.makedirs('uploads', exist_ok=True)
-    rc = subprocess.call("create-schema.sh")
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8888)))
