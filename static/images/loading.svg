@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 25" preserveAspectRatio="xMidYMid" style="shape-rendering: auto; display: block; background: rgb(215, 244, 222);" width="200" height="50" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g>
+<rect x="15" y="0" width="10" height="50" fill="#4285f4">
+  <animate attributeName="opacity" dur="1s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.5 0 0.5 1;0.5 0 0.5 1" values="1;0.2;1" begin="-0.6"></animate>
+</rect>
+<rect x="35" y="0" width="10" height="50" fill="#34a853">
+  <animate attributeName="opacity" dur="1s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.5 0 0.5 1;0.5 0 0.5 1" values="1;0.2;1" begin="-0.4"></animate>
+</rect>
+<rect x="55" y="0" width="10" height="50" fill="#fbbc05">
+  <animate attributeName="opacity" dur="1s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.5 0 0.5 1;0.5 0 0.5 1" values="1;0.2;1" begin="-0.2"></animate>
+</rect>
+<rect x="75" y="0" width="10" height="50" fill="#ea4335">
+  <animate attributeName="opacity" dur="1s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.5 0 0.5 1;0.5 0 0.5 1" values="1;0.2;1" begin="-1"></animate>
+</rect>
+</g>
+</svg>

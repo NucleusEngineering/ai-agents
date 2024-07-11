@@ -1,0 +1,258 @@
+/* 
+Copyright 2024 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License. 
+ */
+
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+h1 {
+    font-size: 5.6em;
+    margin: 0;    
+}
+
+h2 {
+    font-size: 3em;
+    opacity: .75;
+    margin-top: 11px;    
+}
+
+form {
+    width: 100%;
+}
+
+input {
+    width: 70%;
+}
+
+form > button {
+    width: 20%;
+}
+
+ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+ul li {
+    display: inline-block;
+    vertical-align: text-top;;
+}
+
+ul li + li {
+    margin-left: 10px;
+}
+
+ul li:last-child {
+    position: relative;
+    top: -5px;
+}
+
+ul li img {
+    max-height: 24px;
+}
+
+.hero {    
+    margin-right: 7%;    
+}
+
+.chat-container {
+    background-color: #fff;
+    width: 550px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    height: 534px;
+    position: relative;
+}
+
+.chat-history {
+    padding: 20px;
+    overflow-y: auto;
+    position: absolute;
+    bottom: 77px;
+    left: 0;
+    right: 0;
+    max-height: 400px;
+    margin-bottom: 10px;
+}
+
+.chat-message {
+    margin-bottom: 10px;  
+}
+
+.chat-history > .chat-message:last-child {
+    scroll-snap-align: end;
+}
+
+.chat-message p {
+    background-color: #eee;
+    padding: 10px 15px;
+    margin: 0;
+    border-radius: 15px;
+    display: inline-block;
+}
+
+.chat-message.chatbot p {
+    background-color: #d7f4de;
+}
+
+.chat-message.user {
+    text-align: right; 
+}
+
+.chat-input-container {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    background-color: #f8f8f8;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    left: 0;
+}
+
+.chat-input-container input[type="text"] {
+    flex-grow: 1;
+    padding: 10px;
+    border: none;
+    outline: none;
+    margin-right: 3%;
+    border-radius: 5px;
+}
+
+.btn {
+    padding: 10px 20px;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+
+}
+
+.chat-button {
+    background-color: #0084ff;
+}
+
+.talk-button {
+    vertical-align: top;
+    cursor: pointer; 
+    background: url('/static/images/mic_icon.svg') no-repeat center;
+    min-height: 36px;
+    width: 10%;
+}
+
+.talk-button:hover {
+    filter: brightness(120%);
+}
+
+.chat-input-container button:disabled {
+    opacity: 0.5;
+}
+
+.chat-loading-indicator-container {
+    margin-left: 15px;
+    padding: 0;
+}
+
+.htmx-indicator {
+    height: 20px;
+    vertical-align: middle;
+}
+
+table {
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-size: 0.9em;
+    font-family: sans-serif;
+    min-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+table thead tr {
+    background-color: #009879;
+    color: #ffffff;
+    text-align: left;
+}
+
+table th,
+table td {
+    padding: 12px 15px;
+}
+
+table tbody tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+table tbody tr:last-of-type {
+    border-bottom: 2px solid #009879;
+}
+
+table tbody tr.active-row {
+    font-weight: bold;
+    color: #009879;
+}
+
+#myCharacterWindow {
+    display: none;
+    z-index: 999;
+    width: 640px;
+    height: 516px; /* Content area height */
+    border: 1px solid #ccc;
+    position: absolute; /* Allow dragging */
+}
+
+#titleBar {
+    position: relative;
+    background-color: #cccccc;
+    height: 32px;
+    cursor: move; /* Indicate draggability */
+    user-select: none; /* Prevent text selection */    
+    text-align: center;
+    display: flex; /* Enable Flexbox for alignment */
+    justify-content: space-between; /* Space between title and button */
+    align-items: center; /* Vertically align items */
+    padding: 0px 5px 0px 5px;
+}
+    
+#titleText {
+    flex-grow: 1; /* Allow title to take up available space */
+    text-align: center; /* Center the title text */
+}
+
+#closeButton {
+    width: 5%;
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+#myCharacterContainer {
+    width: 640px;
+    height: 480px;
+}

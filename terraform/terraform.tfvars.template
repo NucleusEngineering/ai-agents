@@ -1,0 +1,6 @@
+service_name = "ai-agents-demo"
+project_id   = "<PROJECT_ID>"
+region       = "<REGION>" 
+db_password  = "postgres"
+db_user      = "postgres"
+db_database  = "ai_agent"

@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+   alloydb_omni:
+      image: google/alloydbomni
+      container_name: alloydbomni
+      restart: always
+      environment:
+      - POSTGRES_PASSWORD=postgres
+      ports:
+      - '5432:5432'
+
+   pgadmin:
+      image: dpage/pgadmin4
+      container_name: pgadmin4_container
+      restart: always
+      ports:
+      - "8081:80"
+      environment:
+         PGADMIN_DEFAULT_EMAIL: google-noreply@google.com
+         PGADMIN_DEFAULT_PASSWORD: pgadmin_postgresql
+      volumes:
+      - /var/lib/postgresql/docker-pgadmin:/var/lib/pgadmin
+
+   ai-agent:
+      build: 
+         context: .   
+      environment:
+         DB_PASSWORD: postgres
+         DB_USER: postgres
+         DB_HOST: alloydbomni
+         DB_DATABASE: ai_agent
+         REGION: ${REGION}
+         PROJECT_ID: ${PROJECT_ID}
+         GOOGLE_APPLICATION_CREDENTIALS: /tmp/credentials.json
+         FLASK_APP: main.py
+      ports:
+         - "8080:8080"
+      volumes:
+         - .:/app # Mount the current directory to /app
+         - ~/.config/gcloud/application_default_credentials.json:/tmp/credentials.json   # Mount the credentials file (check whether you ran gcloud auth login)
+      entrypoint: ./entrypoint.sh debug

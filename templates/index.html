@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Agent - Cymbal Game Studios</title>
+  <script type="importmap"> { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.166.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.166.0/examples/jsm/" } } </script>
+  <script src="https://unpkg.com/lil-gui@0.19.2/dist/lil-gui.umd.min.js"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+  <script src="/static/js/main.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/lil-gui@0.19.2/dist/lil-gui.min.css" type="text/css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto" type="text/css">
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="/static/css/style.css" type="text/css">
+</head>
+<body>
+  <script type="module" src="/static/js/character.js"></script>
+  <div class="hero">
+    <h1>AI Agent demo</h1><h2>Cymbal Game Studios</h2>    
+    <ul>
+      <li>Powered by</li>
+      <li><img src="/static/logos/gcp.png"></li>
+      <li><img src="/static/logos/vertexai.png"></li>
+      <li><img src="/static/logos/gemini.svg"></li>
+    </ul>
+  </div>
+  
+  <div id="myCharacterWindow">
+    <div id="titleBar">
+      <span id="titleText">My Character(s)</span>
+      <button id="closeButton">X</button>
+    </div>
+    <div id="myCharacterContainer"></div>
+  </div>
+
+  <div class="chat-container">
+    <div class="chat-history" id="chat-history">
+      <div class="chat-message chatbot">
+        <p>Hi! How can we help you today?</p>
+      </div>
+    </div>
+    <div class="chat-input-container">
+      <form id="chat-form" hx-post="/chat" hx-target=".response-target"  hx-indicator="#loading-indicator" hx-swap="beforeend" hx-on::before-request="this.reset()" hx-on::after-request="scrollToBottom(); enableFormFields(); removeLoadingIndicator();" hx-disabled-elt="input[type='text'], button">
+        <input type="text" name="prompt" id="prompt" placeholder="Type your message here..." autocomplete="off" required>
+        <button id="chat-button" class="btn chat-button" hx-on:click="insertUserPrompt(); insertBotPlaceholder();">Send</button>        
+      </form>
+      <button id="talk-button" class="btn talk-button" hx-on:mousedown="startRecording()" hx-on:mouseup="stopRecording()"></button> 
+    </div>
+  </div>
+</body>
+</html>
