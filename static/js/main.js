@@ -17,7 +17,11 @@ limitations under the License.
 let mediaRecorder;
 let audioChunks = [];
 
-async function startRecording() {
+async function startRecording(self, event) {
+    if ("buttons" in event) {
+        if (event.buttons == 2)
+            return;
+    }    
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
     mediaRecorder = new MediaRecorder(stream);
@@ -27,7 +31,7 @@ async function startRecording() {
     insertUserPrompt("&#127911;");
 }
 
-function stopRecording() {
+function stopRecording(self, event) {
     mediaRecorder.stop();
 
     mediaRecorder.onstop = () => {
@@ -69,7 +73,7 @@ function insertUserPrompt(prompt) {
     
     injectHTML = `
     <div class="chat-message user">
-      <p>`+ prompt + `</p>
+      <div class="msg">`+ prompt + `</div>
     </div>`;
 
     subject.insertAdjacentHTML('beforeend', injectHTML);
@@ -83,7 +87,7 @@ function insertBotPlaceholder() {
     injectHTML = `
     <div class="chat-message chatbot response-target">
         <div class="chat-loading-indicator-container">
-            <p><img id="loading-indicator" class="htmx-indicator" src="/static/images/loading.svg"/></p>
+            <div class="msg"><img id="loading-indicator" class="htmx-indicator" src="/static/images/loading.svg"/></div>
         </div>
     </div>`;
 

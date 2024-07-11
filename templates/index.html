@@ -37,7 +37,7 @@
   <div class="chat-container">
     <div class="chat-history" id="chat-history">
       <div class="chat-message chatbot">
-        <p>Hi! How can we help you today?</p>
+        <div class="msg">Hi! How can we help you today?</div>
       </div>
     </div>
     <div class="chat-input-container">
@@ -45,7 +45,7 @@
         <input type="text" name="prompt" id="prompt" placeholder="Type your message here..." autocomplete="off" required>
         <button id="chat-button" class="btn chat-button" hx-on:click="insertUserPrompt(); insertBotPlaceholder();">Send</button>        
       </form>
-      <button id="talk-button" class="btn talk-button" hx-on:mousedown="startRecording()" hx-on:mouseup="stopRecording()"></button> 
+      <button id="talk-button" class="btn talk-button" hx-on:ontouchstart="startRecording(this, event)" hx-on:mousedown="startRecording(this, event)" hx-on:mouseup="stopRecording()" hx-on:ontouchend="stopRecording()"></button> 
     </div>
   </div>
 </body>

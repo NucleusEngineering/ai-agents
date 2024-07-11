@@ -17,35 +17,33 @@ limitations under the License.
 body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
-    padding: 0;
+    padding: 0 25px;
     background-color: #f4f4f4;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     min-height: 100vh;
+    min-width: 480px;
 }
 
 h1 {
-    font-size: 5.6em;
+    font-size: 3.6em;
     margin: 0;    
 }
 
 h2 {
-    font-size: 3em;
+    font-size: 1em;
     opacity: .75;
     margin-top: 11px;    
 }
 
 form {
-    width: 100%;
+    width: 92%;
 }
 
 input {
-    width: 70%;
+    width: 66%;
 }
 
 form > button {
-    width: 20%;
+    width: 22%;
 }
 
 ul {
@@ -60,7 +58,7 @@ ul li {
 }
 
 ul li + li {
-    margin-left: 10px;
+    margin-left: 5px;
 }
 
 ul li:last-child {
@@ -69,16 +67,17 @@ ul li:last-child {
 }
 
 ul li img {
-    max-height: 24px;
+    max-height: 18px;
 }
 
 .hero {    
-    margin-right: 7%;    
+    margin-bottom: 7%;    
 }
 
 .chat-container {
     background-color: #fff;
-    width: 550px;
+    max-width: 800px;
+    width: 100%;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     border-radius: 5px;
     height: 534px;
@@ -104,7 +103,7 @@ ul li img {
     scroll-snap-align: end;
 }
 
-.chat-message p {
+.chat-message .msg {
     background-color: #eee;
     padding: 10px 15px;
     margin: 0;
@@ -112,7 +111,7 @@ ul li img {
     display: inline-block;
 }
 
-.chat-message.chatbot p {
+.chat-message.chatbot .msg {
     background-color: #d7f4de;
 }
 
@@ -136,12 +135,12 @@ ul li img {
     padding: 10px;
     border: none;
     outline: none;
-    margin-right: 3%;
+    margin-right: 2%;
     border-radius: 5px;
 }
 
 .btn {
-    padding: 10px 20px;
+    padding: 10px 0;
     color: #fff;
     border: none;
     cursor: pointer;
@@ -153,17 +152,37 @@ ul li img {
     background-color: #0084ff;
 }
 
+.chat-button:hover {
+    filter: brightness(120%);
+}
+
 .talk-button {
     vertical-align: top;
+    position: absolute;
+    right: 5%;
     cursor: pointer; 
     background: url('/static/images/mic_icon.svg') no-repeat center;
     min-height: 36px;
-    width: 10%;
+    width: 32px;
 }
 
 .talk-button:hover {
     filter: brightness(120%);
 }
+
+
+.talk-button:active {
+    animation: glow 1s infinite alternate;
+}
+
+@keyframes glow {
+    from {
+      box-shadow: rgb(255, 30, 30) 0px 0px 0px -3px;
+    }
+    to {
+        box-shadow: rgb(255, 60, 60) 0px 0px 0px 3px;
+    }
+  }
 
 .chat-input-container button:disabled {
     opacity: 0.5;
@@ -255,4 +274,41 @@ table tbody tr.active-row {
 #myCharacterContainer {
     width: 640px;
     height: 480px;
+}
+
+@media (min-width: 800px) {
+    .chat-container {
+        width: 90%;
+        height: 450px;
+    }
+
+    .chat-history {
+        max-height: 300px;
+    }
+
+    .chat-input-container input[type="text"] {
+        width: 68%;
+    }
+
+    body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .hero {
+        margin: 0 7% 0 0;
+    }
+
+    h1 {
+        font-size: 5.6em;
+    }
+    
+    h2 {
+        font-size: 3em;
+    }
+    
+    ul li img {
+        max-height: 24px;
+    }       
 }

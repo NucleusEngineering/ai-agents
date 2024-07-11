@@ -188,6 +188,10 @@ def chat():
 
             text_response = function_calling_helper.extract_text(response)
 
+        except TypeError as e:
+            logging.error("%s, %s", traceback.format_exc(), e)
+            text_response = 'Sorry, I couldn\'t process your query. Please try again later.'
+
         except Exception as e:
             logging.error("%s, %s", traceback.format_exc(), e)
             text_response = 'Sorry, I couldn\'t process your query. Please try again later.'

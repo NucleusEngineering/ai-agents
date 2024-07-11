@@ -128,6 +128,10 @@ function initDragging() {
         $("#myCharacterWindow").hide();
     });
 
+    $("#closeButton").on('touchend', function(e) {
+        $("#myCharacterWindow").hide();
+    });
+
     $(document).mousemove(function(e) {
         if (isDragging) {
             $("#myCharacterWindow").offset({

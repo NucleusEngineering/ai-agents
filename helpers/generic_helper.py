@@ -51,9 +51,13 @@ class Config:
 # Helper functions
 
 def gemini_response_to_template_html(response):
-    response = response.replace('<p></p>', '') # Sometimes gemini produces empty paragraphs in html outputs.
+    # Sometimes gemini produces empty paragraphs as well as markdown in html outputs
+    response = response.replace('<p></p>', '') 
+    response = response.replace('```html', '')
+    response = response.replace('```', '')
+    
     return """
-        <p>""" + response + """</p>
+        <div class="msg">""" + response + """</div>
     """
 
 def get_random_color():
