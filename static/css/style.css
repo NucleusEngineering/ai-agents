@@ -283,7 +283,7 @@ table tbody tr.active-row {
     }
 
     .chat-history {
-        max-height: 300px;
+        max-height: 500px;
     }
 
     .chat-input-container input[type="text"] {

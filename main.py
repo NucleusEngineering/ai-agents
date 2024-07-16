@@ -70,7 +70,8 @@ def init_model():
 def init_flash_model():
     model = GenerativeModel(
         config.get_property('general', 'gemini_flash_version'),
-        generation_config=GenerationConfig(temperature=1)
+        generation_config=GenerationConfig(temperature=1),
+        system_instruction=[config.get_property('chatbot', 'llm_flash_system_instruction')]
     )
 
     return model
@@ -242,3 +243,12 @@ def version():
 if __name__ == "__main__":
     os.makedirs('uploads', exist_ok=True)
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8888)))
+
+@app.route("/reset", methods=["GET"])
+def reset():
+
+    for uid in client_sessions:
+        client_sessions[uid] = None
+
+    return jsonify({'status': 'ok'}), 200
+
