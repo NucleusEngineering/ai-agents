@@ -65,6 +65,7 @@ Information that AI Agent can discuss with you is:
 * **Tips & Tricks:**  Level up your game with expert tips and tricks for Cloud Royale and Droid Shooter by viewing suggested replays. E.g.: `I'm looking to improve my game strategy in Cloud Royale.`
 * **Generate new avatar:**  Get a new avatar with help of Generative AI. E.g.: `Create me a new avatar that looks like an orange cat.`
 * **Ask specific questions (RAG):**  Get grounded answers based on the specific documents supplied to Gemini. E.g.: `How do I assemble the artifact in Cloud Royale?`
+* **Try multiple languages:**  Speak with the model in any language you know! E.g.: `Que jogos tenho na minha conta?` (pt-PT)
 
 # Example of 3D character representation:
 ![3D Character](static/images/3d_character_demo.png "3D Character preview")

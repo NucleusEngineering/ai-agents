@@ -91,7 +91,7 @@ def init_rag_model():
 
 # Chat initialization per tenant (cleanup needed after timeout/logout)
 def init_chat(model, user_id):
-    if user_id in client_sessions:
+    if user_id in client_sessions and client_sessions[user_id] != None:
         logging.debug("Re-using existing session")
         return client_sessions[user_id]
 
@@ -246,7 +246,6 @@ if __name__ == "__main__":
 
 @app.route("/reset", methods=["GET"])
 def reset():
-
     for uid in client_sessions:
         client_sessions[uid] = None
 
