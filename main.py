@@ -224,25 +224,11 @@ def home():
     
     return render_template("index.html")
 
-@app.route("/model", methods=["GET"])
-def model():
-    if os.environ.get("DEV_MODE") == "true":
-        with open("templates/model.html", mode='r') as file:
-            data = file.read()
-
-        return data
-    
-    return render_template("model.html")
-
 @app.route("/version", methods=["GET"])
 def version():
     return jsonify({
         "version": config.get_property('general', 'version')
         })
-
-if __name__ == "__main__":
-    os.makedirs('uploads', exist_ok=True)
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8888)))
 
 @app.route("/reset", methods=["GET"])
 def reset():
@@ -250,4 +236,8 @@ def reset():
         client_sessions[uid] = None
 
     return jsonify({'status': 'ok'}), 200
+
+if __name__ == "__main__":
+    os.makedirs('uploads', exist_ok=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8888)))
 

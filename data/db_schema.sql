@@ -84,7 +84,8 @@ CREATE TABLE character_personalization (
 
 INSERT INTO character_personalization (character_id, user_id, c1, c2, c3, c4, character_name) VALUES
 (1,	1,	'#CCCCCC', '#CCCCCC', '#CCCCCC', '#CCCCCC', 'Character A'),
-(2,	1,	'#CCCCCC', '#CCCCCC', '#CCCCCC', '#CCCCCC', 'Character B');
+(2,	1,	'#CCCCCC', '#CCCCCC', '#CCCCCC', '#CCCCCC', 'Character B'),
+(3,	1,	'#CCCCCC', '#CCCCCC', '#CCCCCC', '#CCCCCC', 'Bugdroid');
 
 CREATE TABLE user_orders (
   order_id SERIAL PRIMARY KEY,

@@ -414,7 +414,7 @@ class User:
 
     def generate_profile_picture(self, user_id, description):
         try:
-            model = ImageGenerationModel.from_pretrained("imagegeneration@006")
+            model = ImageGenerationModel.from_pretrained("imagen-3.0-fast-generate-001")
 
             images = model.generate_images(
                 prompt=description + '. ' + self.config_service.get_property('chatbot', 'imagen_instructions'),
@@ -425,7 +425,7 @@ class User:
                 # add_watermark=False,
                 # seed=100,
                 aspect_ratio="1:1",
-                safety_filter_level="block_none",
+                safety_filter_level="block_some",
                 person_generation="allow_adult",
             )
 
@@ -450,5 +450,5 @@ class User:
             logging.error("%s, %s", traceback.format_exc(), e)
             return 'Reply that we failed to generate a new profile picture. Ask them to try again later'
 
-        return '<br><img style="width: 50%; border-radius: 10px;" src="' + cdn_url + '"><br>'
+        return 'Reply "There you go." and output this raw HTML: <br><img style="width: 50%; border-radius: 10px;" src="' + cdn_url + '"><br>'
         

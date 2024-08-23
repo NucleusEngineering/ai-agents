@@ -55,7 +55,7 @@ def gemini_response_to_template_html(response):
     response = response.replace('<p></p>', '') 
     response = response.replace('```html', '')
     response = response.replace('```', '')
-    response = response.replace('\"', '"')
+    response = response.replace('\\"', '"')
     
     return """
         <div class="msg">""" + response + """</div>

@@ -157,6 +157,7 @@ function fetchMaterialColor(modelName) {
     })
     .then(data => {
         setMaterialColor('Yellow.001', data.c1);
+        setMaterialColor('Yellow.002', data.c1);
         setMaterialColor('Red.001', data.c2);
         setMaterialColor('Green.001', data.c3);
         setMaterialColor('Blue.001', data.c4);
@@ -193,7 +194,17 @@ function reloadModel(modelName) {
     loader.load( 'static/models/'+filename+'.glb', function ( gltf ) {
         model = gltf.scene;
         model.name = modelName;
+        if(model.name == 'Bugdroid') {
+            model.animations = gltf.animations;
+            console.log('Adding ' + model.animations.length + ' animations.')
+        }
+
         scene.add( model );
+
+        if(model.name == 'Bugdroid') {
+            mixer = new THREE.AnimationMixer(model);
+            mixer.clipAction(model.animations[0]).play();        
+        }
 
         fetchMaterialColor   (model.name);
     }, undefined, function ( e ) {
@@ -203,7 +214,11 @@ function reloadModel(modelName) {
 
 function createGUI( model ) {
 
-    const states = [ 'Character A', 'Character B' ];
+    const states = [ 
+        'Character A', 
+        'Character B', 
+        // 'Bugdroid' 
+    ];
 
     gui = new GUI({ autoPlace: false });
     container.appendChild(gui.domElement);
@@ -247,3 +262,4 @@ function animate() {
     stats.update();
 
 }
+

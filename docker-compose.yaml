@@ -31,7 +31,7 @@ services:
       - "8081:80"
       environment:
          PGADMIN_DEFAULT_EMAIL: google-noreply@google.com
-         PGADMIN_DEFAULT_PASSWORD: pgadmin_postgresql
+         PGADMIN_DEFAULT_PASSWORD: postgres
       volumes:
       - /var/lib/postgresql/docker-pgadmin:/var/lib/pgadmin
 
