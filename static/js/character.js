@@ -217,7 +217,7 @@ function createGUI( model ) {
     const states = [ 
         'Character A', 
         'Character B', 
-        // 'Bugdroid' 
+        //'Bugdroid' 
     ];
 
     gui = new GUI({ autoPlace: false });

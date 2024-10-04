@@ -165,6 +165,8 @@ def chat():
 
     history_clients[user.user_id] = chat.history
 
+    logging.info(response)
+
     function_params = function_calling_helper.extract_params(response)
     function_name = function_calling_helper.extract_function(response)
     text_response = function_calling_helper.extract_text(response)
@@ -175,6 +177,9 @@ def chat():
             
             # Injection of user_id (this should be done dynamically when proper auth is implemented)
             function_params['user_id'] = user.user_id
+
+            logging.info(function_params)
+
             function_response = function_calling_helper.call_function(user_service, function_name, function_params)
 
             response = chat.send_message(

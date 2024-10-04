@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+
 def call_function(service, function_name, params):
     try:
         return getattr(service, function_name)(**params)
@@ -37,11 +39,15 @@ def extract_params(response):
     try:
         for part in response.candidates[0].content.parts: 
             for field in part.function_call.args.items():
+                # logging.info("-----")
+                # logging.info(field[0])
+                # logging.info(field[1])                
+                # logging.info("-----")
                 params[field[0]] = field[1]
     except AttributeError as e:
         return {}
     except Exception as e:
-        print("Cannot extract function parameters name from gemini response. Exception: " + e)
+        print("Cannot extract function parameters name from gemini response. Exception: %e" + e)
 
     return params
 

@@ -76,13 +76,29 @@ class User:
 
         generate_profile_picture = FunctionDeclaration(
             name="generate_profile_picture",
-            description="Create new profile picture or avatar with the description that user specifies.",
+            description="Create new profile picture or avatar. Inject the description into the function that is being called.",
             parameters={
                 "type": "object",
                 "properties": {
-                    "description": {"type": "string", "description": "Description of a profile picture"},
+                    "description": {"type": "string", "description": "Description of the picture or avatar"},
                 },
                 "required": [
+                    "description",
+                ]
+            }
+        )
+
+        generate_model_texture = FunctionDeclaration(
+            name="generate_model_texture",
+            description="Create a new texture for a character. Inject the description into the function that is being called.",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "char_name": {"type": "string", "description": "The name of the character user wants to change colors of"},
+                    "description": {"type": "string", "description": "Description of the texture"},
+                },
+                "required": [
+                    "char_name",
                     "description",
                 ]
             }
@@ -171,11 +187,12 @@ class User:
         )
 
         return [
-            generate_profile_picture,
             get_user_games,
             get_user_tickets,
             request_human_support,
             suggest_strategy,
+            generate_profile_picture,
+            generate_model_texture,
             request_refund,
             get_orders,
             save_char_colors,
@@ -434,7 +451,7 @@ class User:
 
             cdn_url = '/' + output_file
         except Exception as e:
-            logging.error("%s, %s", traceback.format_exc(), e)
+            logging.info("%s, %s", traceback.format_exc(), e)
             return 'Reply that we failed to generate a new profile picture. Ask them to try again later'
 
         try:
@@ -447,8 +464,50 @@ class User:
                 commit(self.connection_pool)
                 logging.info('Updated user profile picture to %s', cdn_url)
         except Exception as e:
-            logging.error("%s, %s", traceback.format_exc(), e)
+            logging.info("%s, %s", traceback.format_exc(), e)
             return 'Reply that we failed to generate a new profile picture. Ask them to try again later'
 
         return 'Reply "There you go." and output this raw HTML: <br><img style="width: 50%; border-radius: 10px;" src="' + cdn_url + '"><br>'
         
+    def generate_model_texture(self, user_id, char_name, description):
+        try:
+            model = ImageGenerationModel.from_pretrained("imagen-3.0-fast-generate-001")
+
+            images = model.generate_images(
+                prompt=description + '. ' + self.config_service.get_property('chatbot', 'imagen_instructions_texture'),
+                # Optional parameters
+                number_of_images=1,
+                language="en",
+                # You can't use a seed value and watermark at the same time.
+                # add_watermark=False,
+                # seed=100,
+                aspect_ratio="1:1",
+                safety_filter_level="block_some",
+                person_generation="allow_adult",
+            )
+
+            output_file = ""
+            for image in images:
+                output_file = "static/textures/tmp-" + str(user_id) + "-" + str(random.randint(0, 10000)) + ".png"
+                image.save(location=output_file, include_generation_parameters=False)        
+
+            cdn_url = '/' + output_file
+        except Exception as e:
+            logging.info("%s, %s", traceback.format_exc(), e)
+            return 'Reply that we failed to generate a new texture. Ask them to try again later'
+
+        try:
+            with getcursor(self.connection_pool) as cur:
+                cur.execute(
+                    "UPDATE character_personalization SET texture = %s WHERE user_id = %s; COMMIT;",
+                    (cdn_url, user_id),
+                )
+
+                commit(self.connection_pool)
+                logging.info('Updated character texture to %s', cdn_url)
+        except Exception as e:
+            logging.info("%s, %s", traceback.format_exc(), e)
+            return 'Reply that we failed to generate a new texture. Ask them to try again later'
+
+        return 'Reply "There you go." and output this raw HTML: <br><img style="width: 50%; border-radius: 10px;" src="' + cdn_url + '"><br>'
+                
