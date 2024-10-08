@@ -184,6 +184,10 @@ function setMaterialColor( materialName, color ) {
     });
 }
 
+export function reloadCurrentModel() {
+    reloadModel(model.name);
+}
+
 function reloadModel(modelName) {
     const loader = new GLTFLoader();
     
@@ -215,9 +219,9 @@ function reloadModel(modelName) {
 function createGUI( model ) {
 
     const states = [ 
+        'Bugdroid',
         'Character A', 
-        'Character B', 
-        //'Bugdroid' 
+        'Character B'
     ];
 
     gui = new GUI({ autoPlace: false });
@@ -262,4 +266,3 @@ function animate() {
     stats.update();
 
 }
-

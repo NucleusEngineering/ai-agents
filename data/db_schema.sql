@@ -79,13 +79,14 @@ CREATE TABLE character_personalization (
   c2 VARCHAR(16),
   c3 VARCHAR(16),
   c4 VARCHAR(16),
+  texture TEXT,
   character_name VARCHAR(2048)
 );
 
-INSERT INTO character_personalization (character_id, user_id, c1, c2, c3, c4, character_name) VALUES
-(1,	1,	'#CCCCCC', '#CCCCCC', '#CCCCCC', '#CCCCCC', 'Character A'),
-(2,	1,	'#CCCCCC', '#CCCCCC', '#CCCCCC', '#CCCCCC', 'Character B'),
-(3,	1,	'#CCCCCC', '#CCCCCC', '#CCCCCC', '#CCCCCC', 'Bugdroid');
+INSERT INTO character_personalization (character_id, user_id, c1, c2, c3, c4, texture, character_name) VALUES
+(1,	1,	'#CCCCCC', '#CCCCCC', '#CCCCCC', '#CCCCCC', '', 'Character A'),
+(2,	1,	'#CCCCCC', '#CCCCCC', '#CCCCCC', '#CCCCCC', '', 'Character B'),
+(3,	1,	'#CCCCCC', '#CCCCCC', '#CCCCCC', '#CCCCCC', '', 'Bugdroid');
 
 CREATE TABLE user_orders (
   order_id SERIAL PRIMARY KEY,

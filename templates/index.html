@@ -36,7 +36,11 @@ limitations under the License. -->
   <link rel="stylesheet" href="/static/css/style.css" type="text/css">
 </head>
 <body>
-  <script type="module" src="/static/js/character.js"></script>
+  <script type="module">
+    import {reloadCurrentModel} from "/static/js/character.js"
+    console.log("loaded");
+    window.reloadCurrentModel = reloadCurrentModel;
+  </script>
   <script type="module">
   </script>
   <div class="hero">

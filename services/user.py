@@ -422,7 +422,7 @@ class User:
 
             commit(self.connection_pool)
 
-            return "Reply that their character colors have been saved."
+            return "Reply that their character colors have been saved and add this raw HTML in the end: <script>window.reloadCurrentModel();</script>"
         
         except Exception as e:
             logging.error("%s, %s", traceback.format_exc(), e)

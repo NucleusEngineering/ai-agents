@@ -206,3 +206,5 @@ override.tf.json
 terraform.rc
 
 static/avatars/*
+static/textures/*
+
