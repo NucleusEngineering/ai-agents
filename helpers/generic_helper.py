@@ -19,7 +19,6 @@ import time
 import subprocess
 import logging
 
-
 # Singleton config class
 
 class Config:

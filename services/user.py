@@ -436,7 +436,7 @@ class User:
             images = model.generate_images(
                 prompt=description + '. ' + self.config_service.get_property('chatbot', 'imagen_instructions'),
                 # Optional parameters
-                number_of_images=1,
+                number_of_images=4,
                 language="en",
                 # You can't use a seed value and watermark at the same time.
                 # add_watermark=False,
@@ -476,7 +476,7 @@ class User:
             images = model.generate_images(
                 prompt=description + '. ' + self.config_service.get_property('chatbot', 'imagen_instructions_texture'),
                 # Optional parameters
-                number_of_images=1,
+                number_of_images=4,
                 language="en",
                 # You can't use a seed value and watermark at the same time.
                 # add_watermark=False,
@@ -486,10 +486,8 @@ class User:
                 person_generation="allow_adult",
             )
 
-            output_file = ""
-            for image in images:
-                output_file = "static/textures/tmp-" + str(user_id) + "-" + str(random.randint(0, 10000)) + ".png"
-                image.save(location=output_file, include_generation_parameters=False)        
+            output_file = "static/textures/tmp-" + str(user_id) + "-" + str(random.randint(0, 10000)) + ".png"
+            images[0].save(location=output_file, include_generation_parameters=False)        
 
             cdn_url = '/' + output_file
         except Exception as e:

@@ -16,8 +16,11 @@ import traceback
 import vertexai
 import os
 import logging
+import random
+from bs4 import BeautifulSoup
 
 import vertexai.preview.generative_models as generative_models
+from google.cloud import texttospeech
 
 from vertexai.preview.generative_models import (
     GenerationConfig,
@@ -205,6 +208,49 @@ def chat():
     if len(text_response) == 0:
         text_response = 'Sorry, I couldn\'t process your query. Please try again later.'
         
+    if audio != None:
+        # call google text to voice api and synthesize text_response in english
+        audio_file_path = os.path.join('static/audio_output', f'output_{user.user_id}{str(random.randint(0, 10000)) }.wav')
+
+        # Instantiates a client
+        client = texttospeech.TextToSpeechClient()
+
+        soup = BeautifulSoup(text_response, 'html.parser')
+        text_response_without_html = soup.get_text()
+
+        # Set the text input to be synthesized (if it doesn't contain html)
+        if "</table>" in text_response:
+            synthesis_input = texttospeech.SynthesisInput(text=config.get_property('chatbot', 'default_audio_response'))
+        else:
+            synthesis_input = texttospeech.SynthesisInput(text=text_response_without_html)
+
+        # Build the voice request, select the language code ("en-US") and the SSML
+        # voice gender ("MALE")
+        voice = texttospeech.VoiceSelectionParams(
+            language_code="en-US", ssml_gender=texttospeech.SsmlVoiceGender.MALE
+        )
+
+        # Select the type of audio file you want returned
+        audio_config = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.LINEAR16)
+
+        # Perform the text-to-speech request
+        response = client.synthesize_speech(
+            input=synthesis_input, voice=voice, audio_config=audio_config
+        )
+
+        # The response's audio_content is binary.
+        with open(audio_file_path, "wb") as out:
+            out.write(response.audio_content)
+
+        # Return the HTML audio element pointing to the synthesized audio file
+        text_response += f"""
+        <br><br>
+        <audio controls autoplay>
+            <source src="/{audio_file_path}" type="audio/wav">
+            Your browser does not support the audio element.
+        </audio>
+        """
+
     return generic_helper.gemini_response_to_template_html(text_response)
 
 # Get character color

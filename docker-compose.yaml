@@ -45,6 +45,7 @@ services:
          DB_DATABASE: ai_agent
          REGION: ${REGION}
          PROJECT_ID: ${PROJECT_ID}
+         GOOGLE_CLOUD_PROJECT: ${PROJECT_ID}
          GOOGLE_APPLICATION_CREDENTIALS: /tmp/credentials.json
          FLASK_APP: main.py
       ports:
