@@ -49,7 +49,7 @@ services:
          GOOGLE_APPLICATION_CREDENTIALS: /tmp/credentials.json
          FLASK_APP: app.py
       ports:
-         - "8083:8080"
+         - "8080:8080"
       volumes:
          - .:/app # Mount the current directory to /app
          - ~/.config/gcloud/application_default_credentials.json:/tmp/credentials.json   # Mount the credentials file (check whether you ran gcloud auth login)
