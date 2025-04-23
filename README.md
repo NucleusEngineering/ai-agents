@@ -6,7 +6,7 @@
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg)](https://www.docker.com/)
 [![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg)](https://www.terraform.io/)
 
-**AI Agents** is an advanced project leveraging the power of [Google's Gemini 1.5 Pro and Gemini 1.5 Flash](https://developers.googleblog.com/en/gemini-15-pro-and-15-flash-now-available/) AI models. It offers:
+**AI Agents** is an advanced project leveraging the power of [Google's Gemini 2.0 Pro and Gemini 2.0 Flash](https://developers.googleblog.com/en/gemini-15-pro-and-15-flash-now-available/) AI models. It offers:
 
 * **[Function Calling](https://ai.google.dev/gemini-api/docs/function-calling):** Seamless integration of custom functions.
 * **[RAG (Retrieval Augmented Generation)](https://cloud.google.com/vertex-ai/generative-ai/docs/llamaindex-on-vertexai):** Enhanced responses with external data context.
@@ -19,9 +19,9 @@ Built with Python, it utilizes [AlloyDB](https://cloud.google.com/alloydb) when 
 
 ## Features
 
-* Cutting-edge AI (Gemini 1.5 Pro & Flash)
+* Cutting-edge AI (Gemini 2.0 Pro & Flash, Chirp 3 and Imagen 3)
 * Versatile capabilities (function calling, RAG, voice transcribing)
-* Robust local storage (AlloyDB Omni)
+* Robust local storage (AlloyDB Omni and Cloud Firestore)
 * Streamlined deployment (Docker & Terraform)
 
 ## Getting Started
@@ -58,14 +58,13 @@ You can interact with the AI Agent both via writing and voice. To use voice, you
 Information that AI Agent can discuss with you is:
 
 * **Games:**  Get the information about the games you own. E.g.: `What games do I own?`
-* **Order Information:**  Get the lowdown on your Cloud Royale and Droid Shooter orders. E.g.: `Show me my orders for Droid Shooter`
-* **Support Tickets:** Need help? Check the status of your support tickets right here. E.g.: `What are my support tickets?`
+* **Order Information:**  Get the lowdown on your Cloud Royale and Droid Shooter orders. E.g.: `Show me my orders for Cloud Meow`
 * **Character Showcase:** See your awesome character in all its glory. E.g.: `Show me my character`
-* **Color Palettes:** Looking to spruce up your character? Get suggestions for cool color schemes. E.g.: `Change the color palette to the colors of Google for my character called Character B`
-* **Tips & Tricks:**  Level up your game with expert tips and tricks for Cloud Royale and Droid Shooter by viewing suggested replays. E.g.: `I'm looking to improve my game strategy in Cloud Royale.`
+* **Color Palettes:** Looking to spruce up your character? Get suggestions for cool color schemes. E.g.: `Change the color of my character to yellow`
+* **Tips & Tricks:**  Level up your game with expert tips and tricks for Cloud Royale and Droid Shooter by viewing suggested replays. E.g.: `I'm looking to improve my game strategy in Cloud Meow.`
 * **Generate new avatar:**  Get a new avatar with help of Generative AI. E.g.: `Create me a new avatar that looks like an orange cat.`
-* **Ask specific questions (RAG):**  Get grounded answers based on the specific documents supplied to Gemini. E.g.: `How do I assemble the artifact in Cloud Royale?`
-* **Try multiple languages:**  Speak with the model in any language you know! E.g.: `Que jogos tenho na minha conta?` (pt-PT)
+* **Ask specific questions (RAG):**  Get grounded answers based on the specific documents supplied to Gemini. E.g.: `What are the blocks in Cloud Meow Game?`
+* **Try multiple languages:**  Speak with the model in any language you know! E.g.: `Que encomendas tenho na minha conta?` (pt-PT)
 
 # Example of 3D character representation:
 ![3D Character](static/images/3d_character_demo.png "3D Character preview")

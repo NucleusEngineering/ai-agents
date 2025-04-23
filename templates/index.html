@@ -17,7 +17,6 @@ limitations under the License. -->
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Agent - Cymbal Game Studios</title>
   <script type="importmap">
     {
         "imports":{
@@ -29,22 +28,22 @@ limitations under the License. -->
   <script src="https://unpkg.com/lil-gui@0.19.2/dist/lil-gui.umd.min.js"></script>
   <script src="https://unpkg.com/htmx.org@1.9.12"></script>
   <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <title>AI Agent - Cymbal Game Studios</title>
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
   <script src="/static/js/main.js"></script>
-  <link rel="stylesheet" href="https://unpkg.com/lil-gui@0.19.2/dist/lil-gui.min.css" type="text/css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto" type="text/css">
   <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="/static/css/style.css" type="text/css">
 </head>
 <body>
   <script type="module">
-    import {reloadCurrentModel} from "/static/js/character.js"
-    console.log("loaded");
+    import {reloadCurrentModel} from "/static/js/3dmodel.js"
     window.reloadCurrentModel = reloadCurrentModel;
   </script>
-  <script type="module">
-  </script>
-  <div class="hero">
-    <h1>AI Agent demo</h1><h2>Cymbal Game Studios</h2>    
+<img src="/static/images/flatcat.png" id="flatcatisflat">
+<div class="hero">
+    <h1>AI Agent Demo</h1><h2>Cymbal Game Studios</h2>
     <ul>
       <li>Powered by</li>
       <li><img src="/static/logos/gcp.png"></li>
@@ -52,19 +51,19 @@ limitations under the License. -->
       <li><img src="/static/logos/gemini.svg"></li>
     </ul>
   </div>
-  
-  <div id="myCharacterWindow">
+
+  <div id="modelWindow">
     <div id="titleBar">
-      <span id="titleText">My Character(s)</span>
+      <span id="titleText">My model</span>
       <button id="closeButton">X</button>
     </div>
-    <div id="myCharacterContainer"></div>
+    <div id="modelContainer"></div>
   </div>
 
   <div class="chat-container">
     <div class="chat-history" id="chat-history">
       <div class="chat-message chatbot">
-        <div class="msg">Hi! How can we help you today?</div>
+        <div class="msg">Meow! How can I help you today?</div>
       </div>
     </div>
     <div class="chat-input-container">

@@ -15,22 +15,18 @@
 import json
 
 class User:
-    def __init__(self, user_id, email, name, avatar, is_active, is_validated):
+    def __init__(self, user_id, email, name, avatar):
         self.user_id = user_id
         self.email = email
         self.name = name
         self.avatar = avatar
-        self.is_active = is_active
-        self.is_validated = is_validated
 
     def to_dict(self):
         return {
             "user_id": self.user_id,
             "email": self.email,
             "name": self.name,
-            "avatar": self.name,
-            "is_active": self.is_active,
-            "is_validated": self.is_validated,
+            "avatar": self.name
         }
     
     @classmethod
@@ -39,9 +35,7 @@ class User:
             data["user_id"],
             data["email"],
             data["name"],
-            data["avatar"],
-            data["is_active"],
-            data["is_validated"],
+            data["avatar"]
         )
     
     def __repr__(self):

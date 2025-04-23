@@ -14,32 +14,138 @@
 
 import traceback
 import random
-from json2html import Json2Html
 import logging
-from vertexai.generative_models import FunctionDeclaration
+import requests, json
+import time
+import threading
+import base64
+
+from json2html import Json2Html
+
+from common.function_calling import extract_text
+from common.rag import RAG
+from common.db_helper import getcursor, commit
+from models import model, user, game, replay, order, product
+
+from google.cloud.firestore_v1.base_query import FieldFilter
+from google.cloud.firestore_v1.client import Client
+
+from google import genai
+from google.genai import types
 from vertexai.preview.vision_models import ImageGenerationModel
-from vertexai.preview import rag
-import models.character
-import models.game
-import models.order
-import models.product
-import models.replay
-import models.ticket
-import models.user
-from helpers.db_helper import getcursor, commit
-from helpers.function_calling_helper import extract_text
-import models
+
+from flask_socketio import SocketIO
+from psycopg2.pool import SimpleConnectionPool
 
 class User:
-    def __init__(self, connection_pool, config_service, rag_model):
-        self.connection_pool = connection_pool
+    def __init__(self, db: Client, alloydb: SimpleConnectionPool, config_service, gemini_client: genai.Client, socketio: SocketIO):
+        """
+        Initializes the User service.
+
+        Args:
+            db: Firestore client instance.
+            config_service: Service to get configuration values.
+            rag_config: The RAG model instance.
+        """
+        self.db = db
+        self.alloydb = alloydb
         self.config_service = config_service
-        self.rag_model = rag_model
+        self.gemini_client = gemini_client
+        self.socketio = socketio
+
 
     @staticmethod
     def get_function_declarations():
-        get_user_games = FunctionDeclaration(
-            name="get_user_games",
+
+        fc_generate_avatar = types.FunctionDeclaration(
+            name='fc_generate_avatar',
+            description='Create new avatar or avatar. Inject the description into the function that is being called.',
+            parameters=types.Schema(
+                type='OBJECT',
+                properties={
+                    'description': types.Schema(
+                        type='string', 
+                        description='Description of the picture or avatar',
+                    ),
+                },
+                required=[
+                    'description',
+                ]
+            ),
+        )
+
+        fc_rag_retrieval = types.FunctionDeclaration(
+            name='fc_rag_retrieval',
+            description='Function to be invoked when the prompt is about a super secret game called Cloud Meow.',
+            parameters=types.Schema(
+                type='OBJECT',
+                properties={
+                    'question_passthrough': types.Schema(
+                        type='string', 
+                        description='The whole user\'s prompt in the context of this message'
+                    )
+                },
+                required=[
+                    'question_passthrough',
+                ]            
+            )
+        )
+
+        fc_save_model_color = types.FunctionDeclaration(
+            name='fc_save_model_color',
+            description='Save new color when user requests to update his game model. Input is a color in hex format',
+            parameters=types.Schema(
+                type='OBJECT',
+                properties={
+                    'color': types.Schema(
+                        type='string', 
+                        description='Hex color'
+                    )
+                },
+                required=[
+                    'color',
+                ]
+            )
+        )        
+
+        fc_revert_model_color = types.FunctionDeclaration(
+            name='fc_revert_model_color',
+            description='Revert the color/material of user\'s model on their request.',
+            parameters=types.Schema(
+                type='OBJECT',
+                properties={}
+            )
+        )        
+
+        fc_convert_avatar = types.FunctionDeclaration(
+            name='fc_convert_avatar',
+            description='Convert avatar to 3D model.',
+            parameters=types.Schema(
+                type='OBJECT',
+                properties={}
+            )
+        )        
+
+        fc_show_my_model = types.FunctionDeclaration(
+            name='fc_show_my_model',
+            description='Show user\'s model / character on the screen.',
+            parameters=types.Schema(
+                type='OBJECT',
+                properties={},            
+            )
+        )
+        
+        fc_show_my_avatar = types.FunctionDeclaration(
+            name='fc_show_my_avatar',
+            description='Show user\'s current avatar.',
+            parameters=types.Schema(
+                type='OBJECT',
+                properties={}
+            )
+        )
+
+        fc_get_user_games = types.FunctionDeclaration(
+            name="fc_get_user_games",
             description="Get the games that the user has purchased",
             parameters={
                 "type": "object",
@@ -47,88 +153,9 @@ class User:
             }
         )
 
-        get_user_tickets = FunctionDeclaration(
-            name="get_user_tickets",
-            description="Get the tickets that the user has opened with support",
-            parameters={
-                "type": "object",
-                "properties": {},            
-            }
-        )
-
-        request_refund = FunctionDeclaration(
-            name="request_refund",
-            description="Issue a refund for Cloud Gem or Cloud Gold",
-            parameters={
-                "type": "object",
-                "properties": {
-                    "game_title": {"type": "string", "description": "The name of the game to which the produced will be added"},
-                    "product_title": {"type": "string", "description": "The name of the product to be purchased"},
-                    "quantity": {"type": "string", "description": "Quantity of the purchased product"},
-                },
-                "required": [
-                    "game_title",
-                    "product_title",
-                    "quantity",
-                ]
-            }
-        )
-
-        generate_profile_picture = FunctionDeclaration(
-            name="generate_profile_picture",
-            description="Create new profile picture or avatar. Inject the description into the function that is being called.",
-            parameters={
-                "type": "object",
-                "properties": {
-                    "description": {"type": "string", "description": "Description of the picture or avatar"},
-                },
-                "required": [
-                    "description",
-                ]
-            }
-        )
-
-        generate_model_texture = FunctionDeclaration(
-            name="generate_model_texture",
-            description="Create a new texture for a character. Inject the description into the function that is being called.",
-            parameters={
-                "type": "object",
-                "properties": {
-                    "char_name": {"type": "string", "description": "The name of the character user wants to change colors of"},
-                    "description": {"type": "string", "description": "Description of the texture"},
-                },
-                "required": [
-                    "char_name",
-                    "description",
-                ]
-            }
-        )
-
-        save_char_colors = FunctionDeclaration(
-            name="save_char_colors",
-            description="Save character's colors when user requests to update his character by name. Input are three colors in hex format",
-            parameters={
-                "type": "object",
-                "properties": {
-                    "char_name": {"type": "string", "description": "The name of the character user wants to change colors of"},
-                    "c1": {"type": "string", "description": "Hex color 1"},
-                    "c2": {"type": "string", "description": "Hex color 2"},
-                    "c3": {"type": "string", "description": "Hex color 3"},
-                    "c4": {"type": "string", "description": "Hex color 4"},
-                },
-                "required": [
-                    "char_name",
-                    "c1",
-                    "c2",
-                    "c3",
-                    "c4",
-                ]
-            }
-        )
-
-        suggest_strategy = FunctionDeclaration(
-            name="suggest_strategy",
-            description="Make a suggestion in gameplay when user asks for tips or tricks or is looking for ways to improve",
+        fc_suggest_strategy = types.FunctionDeclaration(
+            name="fc_suggest_strategy",
+            description="Make a suggestion in gameplay when user asks for a strategy to win.",
             parameters={
                 "type": "object",
                 "properties": {
@@ -140,8 +167,8 @@ class User:
             },
         )
 
-        get_orders = FunctionDeclaration(
-            name="get_orders",
+        fc_get_orders = types.FunctionDeclaration(
+            name="fc_get_orders",
             description="Get a list of orders based on the name of the game provided by the user.",
             parameters={
                 "type": "object",
@@ -154,160 +181,176 @@ class User:
             },
         )        
 
-        request_human_support = FunctionDeclaration(
-            name="request_human_support",
-            description="Ask for the support to be transferred to a human",
-            parameters={
-                "type": "object",
-                "properties": {},            
-            }
-        )
 
-        show_my_character = FunctionDeclaration(
-            name="show_my_character",
-            description="Show user's character on the screen.",
-            parameters={
-                "type": "object",
-                "properties": {},            
-            }
-        )
+        return types.Tool(function_declarations=[
+            fc_get_orders,
+            fc_suggest_strategy,
+            fc_get_user_games,
+            fc_generate_avatar,
+            fc_rag_retrieval,
+            fc_save_model_color,
+            fc_revert_model_color,
+            fc_show_my_model,
+            fc_show_my_avatar
+        ])
+    
+    def fc_save_model_color(self, color, user_id):
+        """
+        Saves the model's color to Firestore.
 
-        get_game_information = FunctionDeclaration(
-            name="get_game_information",
-            description="Use this function when asked about gameplay or game features of Cloud Royale or Droid shooter games.",
-            parameters={
-                "type": "object",
-                "properties": {
-                    "question_passthrough": {"type": "string", "description": "The whole user's prompt in the context of this message"}
-                },
-                "required": [
-                    "question_passthrough",
-                ]            
-            }
-        )
+        Args:
+            user_id: The ID of the user.
+            color: The hex color to save.
 
-        return [
-            get_user_games,
-            get_user_tickets,
-            request_human_support,
-            suggest_strategy,
-            generate_profile_picture,
-            generate_model_texture,
-            request_refund,
-            get_orders,
-            save_char_colors,
-            show_my_character,
-            get_game_information
-        ]
-
-    def get_game_information(self, user_id, question_passthrough):        
-        response = self.rag_model.generate_content(question_passthrough)
-        return extract_text(response)
-
-    def suggest_strategy(self, user_id, game_title):
+        Returns:
+            A string response for the user.
+        """
         try:
-            with getcursor(self.connection_pool) as cur:
-                cur.execute("SELECT * FROM available_games WHERE title ILIKE %s LIMIT 1", ["%" + str(game_title) + "%"])
+            # Get the models collection reference
+            models_ref = self.db.collection("models")
 
-            result = cur.fetchone()
+            # Query for the model with the given user_id
+            query = models_ref.where(filter=FieldFilter("user_id", "==", user_id))
+            results = query.get()
 
-            if result is None:
-                return 'Product or game not found. Please try again.'
+            if not results:
+                return f"Reply that no character for user '{user_id}' was found."
 
-            game_object = models.game.Game.from_dict(result)
+            # Update the color of the first matching document
+            for doc in results:
+                doc.reference.update({"color": color, "original_material": False})
+                logging.info(f"Updated color to '{color}' for '{user_id}'\'s model.")
+                break
 
-            cur.execute("SELECT * \
-                FROM game_replays gr \
-                JOIN users u ON gr.winner_id = u.user_id \
-                WHERE gr.winner_id != %s AND gr.game_id = %s ORDER BY gr.winning_score DESC limit 1",
-                    (user_id, game_object.game_id))
-
-            result = cur.fetchone()
-
-            if result is None:
-                return 'Failed to find suitable winning replay. Please try again later.'
-            
-            user_object = models.user.User.from_dict(result)
-            result['winner'] = user_object
-            replay_object = models.replay.Replay.from_dict(result)
-
-            message = f'Reply the user that you see they are having trouble getting a good score in {game_object.title}. \
-                Tell the user to check the replay video with {replay_object.winning_score} points played on {replay_object.date}. \
-                Add this raw HTML in the end: <br><br><iframe width="100%" height="320" src="{replay_object.replay_url}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>'
-            
-            return message
+            return '''Reply that their character color has been updated''', '''<script>window.reloadCurrentModel();</script>'''
         
         except Exception as e:
             logging.error("%s, %s", traceback.format_exc(), e)
-            return 'Reply that we failed to fetch an appliable game strategy.'
+            return 'Reply that we failed to update their character settings.'
 
-    def get_user_games(self, user_id):
+    
+    def fc_revert_model_color(self, user_id):
+        """
+        Revert's the model's color.
+
+        Args:
+            user_id: The ID of the user.
+
+        Returns:
+            A string response for the user.
+        """
         try:
-            with getcursor(self.connection_pool) as cur:
-                cur.execute("SELECT ag.game_id as game_id, ag.title as title , ag.description as description, purchase_date, ag.is_active as is_active \
-                            FROM public.user_games AS ug LEFT JOIN available_games as ag ON ug.game_id = ag.game_id where ug.user_id = %s", 
-                            [user_id])
+            # Get the models collection reference
+            models_ref = self.db.collection("models")
 
-                results = cur.fetchall()
+            # Query for the model with the given user_id
+            query = models_ref.where(filter=FieldFilter("user_id", "==", user_id))
+            results = query.get()
 
-            games = []
-            for i in range(len(results)):
-                games.append(models.game.Game.from_dict(results[i]))
+            if not results:
+                return f"Reply that no character for user '{user_id}' was found."
 
-            # Format the data for json2html
-            formatted_data = [
-                {
-                    "Title": game.title,
-                    "Description": game.description
-                }
-                for game in games
-            ]
+            # Update the color of the first matching document
+            for doc in results:
+                doc.reference.update({"original_material": True})
+                logging.info(f"Reverted to original materials for '{user_id}'\'s model.")
+                break
 
-            j2h = Json2Html()
-            html_table = j2h.convert(json=formatted_data)
-            html_table.__str__
-
-            return html_table
+            return '''Reply that their character colors have been reverted''', '''<script>window.reloadCurrentModel();</script>'''
         
         except Exception as e:
             logging.error("%s, %s", traceback.format_exc(), e)
-            return 'Reply that we failed to fetch their games.'
+            return 'Reply that we failed to update their character settings.'
 
-    def get_user_tickets(self, user_id):
+    def fc_generate_avatar(self, description, user_id):
+        """Returns the new avatar for the user.
+
+        Args:
+        description: The description of the avatar to be generated
+        """
         try:
-            with getcursor(self.connection_pool) as cur:
-                cur.execute("SELECT ticket_id, user_id, ticket_type, message, created_at FROM user_tickets WHERE user_id = %s", [user_id])
+            model = ImageGenerationModel.from_pretrained(self.config_service.get_property("general", "imagen_version"))
 
-            results = cur.fetchall()
+            instruction = self.config_service.get_property("chatbot", "diffusion_generation_instruction")
 
-            tickets = []
-            for i in range(len(results)):
-                tickets.append(models.ticket.Ticket.from_dict(results[i]))
+            images = model.generate_images(
+                prompt=instruction % description,
+                number_of_images=4,
+                language="en",
+                seed=100,
+                add_watermark=False,
+                aspect_ratio="1:1",
+                safety_filter_level="block_some",
+                person_generation="allow_adult",
+            )
 
-            # Format the data for json2html
-            formatted_data = [
-                {
-                    "Ticket Type": ticket.ticket_type,
-                    "Message": ticket.message,
-                    "Date": ticket.created_at
-                }
-                for ticket in tickets
-            ]
+            output_file = "static/avatars/" + str(user_id) + ".png"
+            images[0].save(location=output_file, include_generation_parameters=False)        
 
-            j2h = Json2Html()
-            html_table = j2h.convert(json=formatted_data)
-
-            html_table.__str__
-
-            return html_table
-
+            cdn_url = '/' + output_file
         except Exception as e:
-            logging.error("%s, %s", traceback.format_exc(), e)
-            return 'Reply that we failed to fetch their tickets.'
-        
-    def get_orders(self, user_id, game_title):
+            logging.info("%s, %s", traceback.format_exc(), e)
+            return 'Reply that we failed to generate a new avatar. Ask them to try again later'
+
+
         try:
-            with getcursor(self.connection_pool) as cur:
+            # Update Firestore "users" collection
+            user_ref = self.db.collection("users").where(filter=FieldFilter("user_id", "==", user_id))
+            user_ref.get()[0].reference.update({"avatar": cdn_url})
+            logging.info('Updated user avatar to %s', cdn_url)
+        except Exception as e:
+            logging.info("%s, %s", traceback.format_exc(), e)
+            return 'Reply that we failed to generate a new avatar. Ask them to try again later'
+
+        return '''Reply something like "There you go."''', '''
+            <div>
+                <br>
+                <img class="avatar" src="%s?rand=%s">
+            </div>''' % (cdn_url, str(random.randint(0, 1000000)))
+
+    def fc_rag_retrieval(self, question_passthrough, user_id):
+        """
+        Retrieves information using RAG model.
+
+        Args:
+            user_id: The ID of the user.
+            question_passthrough: The user's prompt.
+
+        Returns:
+            The RAG model's response as a string.
+        """
+
+        # Additional rag config
+
+        response = self.gemini_client.models.generate_content(
+            model=self.config_service.get_property('general', 'rag_gemini_version'),
+            contents=question_passthrough,
+            config=types.GenerateContentConfig(
+                system_instruction=self.config_service.get_property('chatbot', 'llm_system_instruction') + self.config_service.get_property('chatbot', 'llm_response_type'),
+                tools=[RAG(self.config_service).get_rag_retrieval()]    
+            )
+        )
+
+        print(response)
+
+        return response.text, ''
+
+    def fc_show_my_model(self, user_id):
+        logging.info(f"Showing user's ({user_id}) character")
+        return '''Reply something like "there you go"''', '''<script>window.reloadCurrentModel(); $("#modelWindow").show();</script>'''
+
+    def fc_show_my_avatar(self, user_id):
+        logging.info(f"Showing user's ({user_id}) avatar")
+        return '''Reply something like "There you go."''', '''
+            <div>
+                <br>
+                <img class="avatar" src="/static/avatars/%s.png?rand=%s">
+            </div>''' % (user_id, str(random.randint(0, 1000000)))
+
+
+    def fc_get_orders(self, user_id, game_title):
+        try:
+            with getcursor(self.alloydb) as cur:
                 cur.execute("SELECT uo.*, ip.*, ag.* \
                     FROM user_orders uo \
                     JOIN ingame_products ip ON uo.product_id = ip.product_id \
@@ -318,15 +361,15 @@ class User:
             results = cur.fetchall()
 
             if len(results) == 0:
-                return 'No orders were found for {game_title}.'
+                return 'No orders were found for {game_title}.', ""
 
             orders = []
             for i in range(len(results)):
-                product = models.product.Product.from_dict(results[i])
-                game = models.game.Game.from_dict(results[i])
-                results[i]['game'] = game
-                results[i]['product'] = product
-                orders.append(models.order.Order.from_dict(results[i]))
+                _product = product.Product.from_dict(results[i])
+                _game = game.Game.from_dict(results[i])
+                results[i]['game'] = _game
+                results[i]['product'] = _product
+                orders.append(order.Order.from_dict(results[i]))
 
             # Format the data for json2html
             formatted_data = [
@@ -345,167 +388,116 @@ class User:
 
             html_table.__str__
 
-            return html_table
+            return "Reply something like 'Here are you orders:'", html_table
         except Exception as e:
             logging.error("%s, %s", traceback.format_exc(), e)
-            return 'Reply that we failed to fetch their orders.'
+            return 'Reply that we failed to fetch their orders.', ""
 
-    def request_refund(self, user_id, game_title, product_title, quantity): # not using date for now
+    def fc_get_user_games(self, user_id):
         try:
-            with getcursor(self.connection_pool) as cur:
-                cur.execute("SELECT uo.*, ip.*, ag.* \
-                    FROM user_orders uo \
-                    JOIN ingame_products ip ON uo.product_id = ip.product_id \
-                    JOIN available_games ag ON ip.game_id = ag.game_id \
-                    WHERE uo.user_id = %s AND ag.title ILIKE %s AND ip.product_title ILIKE %s AND uo.quantity = %s LIMIT 1;",
-                        (user_id, "%" + str(game_title) + "%", "%" + str(product_title) + "%", quantity))
+            with getcursor(self.alloydb) as cur:
+                cur.execute("SELECT ag.game_id as game_id, ag.title as title , ag.description as description, purchase_date, ag.is_active as is_active \
+                            FROM public.user_games AS ug LEFT JOIN available_games as ag ON ug.game_id = ag.game_id where ug.user_id = %s", 
+                            [user_id])
+
+                results = cur.fetchall()
+
+            games = []
+            for i in range(len(results)):
+                games.append(game.Game.from_dict(results[i]))
+
+            # Format the data for json2html
+            formatted_data = [
+                {
+                    "Title": game.title,
+                    "Description": game.description
+                }
+                for game in games
+            ]
+
+            j2h = Json2Html()
+            html_table = j2h.convert(json=formatted_data)
+            html_table.__str__
+
+            return 'Reply something like "Here are you games:"', html_table
+
+        
+        except Exception as e:
+            logging.error("%s, %s", traceback.format_exc(), e)
+            return 'Reply that we failed to fetch their games.', ""
+
+    def fc_suggest_strategy(self, user_id, game_title):
+        try:
+            with getcursor(self.alloydb) as cur:
+                cur.execute("SELECT * FROM available_games WHERE title ILIKE %s LIMIT 1", ["%" + str(game_title) + "%"])
 
             result = cur.fetchone()
 
             if result is None:
-                return 'Failed to process their refund. Product or game not found. Ask them to try again.'
+                return 'Product or game not found. Please try again.', ""
 
-            product = models.product.Product.from_dict(result)
-            game = models.game.Game.from_dict(result)
+            game_object = game.Game.from_dict(result)
 
-            message = f'Please issue a refund for {product.title}({product.product_id}) in {game.title}({game.game_id}). Requested quantity is {quantity}.'
-
-            cur.execute(
-                "INSERT INTO user_tickets (user_id, ticket_type, message, created_at) \
-                    VALUES (%s, %s, %s, %s)",
-                (user_id, 'billing', message, 'NOW()'),
-            )
-
-            commit(self.connection_pool)
-
-            return 'Reply that we process refunds manually and that we have created a support ticket on their behalf.'
-        except Exception as e:
-            logging.error("%s, %s", traceback.format_exc(), e)
-            return 'Reply saying that we failed to create a refund request support ticket. There was an internal error in our system. Ask them to try again.'
-
-    def request_human_support(self, user_id):
-        logging.info(f"Redirecting user {user_id}")
-        return '<button onclick="window.location.href="\'https://www.google.com/\';">Contact Human Support</button>'
-
-    def show_my_character(self, user_id):
-        logging.info(f"Showing user's ({user_id}) Character")
-        return 'Reply "There you go." and output this raw HTML: <script>$("#myCharacterWindow").show();</script>'
-
-    def get_char_colors(self, user_id, char_name):
-        try:
-            with getcursor(self.connection_pool) as cur:
-                cur.execute("SELECT * FROM character_personalization WHERE user_id = %s AND \
-                             character_name ILIKE %s LIMIT 1", 
-                             (user_id, "%" + str(char_name) + "%"))
-
+            cur.execute("SELECT * \
+                FROM game_replays as gr \
+                WHERE gr.game_id = %s ORDER BY gr.winning_score DESC limit 1",
+                    [game_object.game_id])
+            
             result = cur.fetchone()
 
             if result is None:
+                return 'Failed to find suitable winning replay. Please try again later.', ""
+            
+            result['winner'] = "Anonymous"
+            replay_object = replay.Replay.from_dict(result)
+
+            message = f'Reply the user that you see they are having trouble getting a good score in {game_object.title}. \
+                Tell the user to check the replay video with {replay_object.winning_score} points played on {replay_object.date}.'
+            
+            html_out = f'''<br>
+            <br>
+            <iframe 
+                width="100%" height="320" 
+                src="{replay_object.replay_url}" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                referrerpolicy="strict-origin-when-cross-origin" 
+                allowfullscreen>
+            </iframe>'''
+
+            return message, html_out
+        
+        except Exception as e:
+            logging.error("%s, %s", traceback.format_exc(), e)
+            return 'Reply that we failed to fetch an appliable game strategy.', ""
+
+
+    def get_model(self, user_id):
+        """
+        Retrieves the color of a character from Firestore.
+
+        Args:
+            user_id: The ID of the user.
+
+        Returns:
+            A dictionary containing the character's color information, or None if not found.
+        """
+        try:
+            # Get the models collection reference
+            models_ref = self.db.collection("models")
+
+            # Query for the model with the given user_id
+            query = models_ref.where("user_id", "==", user_id)
+            results = query.get()
+
+            if not results:
+                logging.warning(f"No character found for '{user_id}'.")
                 return None
 
-            character = models.character.Character.from_dict(result)
+            return model.Model.from_dict(results[0].to_dict())
 
-            return character.to_dict()
-        
         except Exception as e:
             logging.error("%s, %s", traceback.format_exc(), e)
             return None
-
-    def save_char_colors(self, user_id, char_name, c1, c2, c3, c4):
-
-        try:
-            with getcursor(self.connection_pool) as cur:
-                cur.execute("UPDATE character_personalization SET c1 = %s, c2 = %s, c3 = %s, c4 = %s \
-                            WHERE user_id = %s AND \
-                             character_name ILIKE %s; COMMIT;", 
-                             (c1, c2, c3, c4, user_id, "%" + str(char_name) + "%"))
-
-            commit(self.connection_pool)
-
-            return "Reply that their character colors have been saved and add this raw HTML in the end: <script>window.reloadCurrentModel();</script>"
         
-        except Exception as e:
-            logging.error("%s, %s", traceback.format_exc(), e)
 
-            return 'Reply that we failed to update their character settings.'
-
-    def generate_profile_picture(self, user_id, description):
-        try:
-            model = ImageGenerationModel.from_pretrained("imagen-3.0-fast-generate-001")
-
-            images = model.generate_images(
-                prompt=description + '. ' + self.config_service.get_property('chatbot', 'imagen_instructions'),
-                # Optional parameters
-                number_of_images=4,
-                language="en",
-                # You can't use a seed value and watermark at the same time.
-                # add_watermark=False,
-                # seed=100,
-                aspect_ratio="1:1",
-                safety_filter_level="block_some",
-                person_generation="allow_adult",
-            )
-
-            output_file = "static/avatars/tmp-" + str(user_id) + "-" + str(random.randint(0, 10000)) + ".png"
-            images[0].save(location=output_file, include_generation_parameters=False)        
-
-            cdn_url = '/' + output_file
-        except Exception as e:
-            logging.info("%s, %s", traceback.format_exc(), e)
-            return 'Reply that we failed to generate a new profile picture. Ask them to try again later'
-
-        try:
-            with getcursor(self.connection_pool) as cur:
-                cur.execute(
-                    "UPDATE users SET avatar = %s WHERE user_id = %s; COMMIT;",
-                    (cdn_url, user_id),
-                )
-
-                commit(self.connection_pool)
-                logging.info('Updated user profile picture to %s', cdn_url)
-        except Exception as e:
-            logging.info("%s, %s", traceback.format_exc(), e)
-            return 'Reply that we failed to generate a new profile picture. Ask them to try again later'
-
-        return 'Reply "There you go." and output this raw HTML: <br><img style="width: 50%; border-radius: 10px;" src="' + cdn_url + '"><br>'
-        
-    def generate_model_texture(self, user_id, char_name, description):
-        try:
-            model = ImageGenerationModel.from_pretrained("imagen-3.0-fast-generate-001")
-
-            images = model.generate_images(
-                prompt=description + '. ' + self.config_service.get_property('chatbot', 'imagen_instructions_texture'),
-                # Optional parameters
-                number_of_images=4,
-                language="en",
-                # You can't use a seed value and watermark at the same time.
-                # add_watermark=False,
-                # seed=100,
-                aspect_ratio="1:1",
-                safety_filter_level="block_some",
-                person_generation="allow_adult",
-            )
-
-            output_file = "static/textures/tmp-" + str(user_id) + "-" + str(random.randint(0, 10000)) + ".png"
-            images[0].save(location=output_file, include_generation_parameters=False)        
-
-            cdn_url = '/' + output_file
-        except Exception as e:
-            logging.info("%s, %s", traceback.format_exc(), e)
-            return 'Reply that we failed to generate a new texture. Ask them to try again later'
-
-        try:
-            with getcursor(self.connection_pool) as cur:
-                cur.execute(
-                    "UPDATE character_personalization SET texture = %s WHERE user_id = %s; COMMIT;",
-                    (cdn_url, user_id),
-                )
-
-                commit(self.connection_pool)
-                logging.info('Updated character texture to %s', cdn_url)
-        except Exception as e:
-            logging.info("%s, %s", traceback.format_exc(), e)
-            return 'Reply that we failed to generate a new texture. Ask them to try again later'
-
-        return 'Reply "There you go." and output this raw HTML: <br><img style="width: 50%; border-radius: 10px;" src="' + cdn_url + '"><br>'
-                

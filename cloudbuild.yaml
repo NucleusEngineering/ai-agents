@@ -8,7 +8,7 @@ steps:
   entrypoint: gcloud
   args: ['run', 'deploy', '${_SERVICE_NAME}', '--image', '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_SERVICE_NAME}/${_SERVICE_NAME}:$BUILD_ID', '--region', '${_REGION}', '--platform', 'managed', '--allow-unauthenticated']
 substitutions:
-  _SERVICE_NAME: ai-agents-demo
+  _SERVICE_NAME: ai-agents
   _REGION: us-central1
 images:
 - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_SERVICE_NAME}/${_SERVICE_NAME}:$BUILD_ID

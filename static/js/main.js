@@ -14,10 +14,98 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+window.oncontextmenu = function() { return false; }
+
+
+const socket = io();
+
+// --- Example: Join the 'xpto' room when the connection is established ---
+socket.on('connect', () => {
+  console.log('Socket connected:', socket.id);
+});
+
+socket.on('model_update_complete', function(data) {
+    console.log('Received update via websocket:', data.message);
+    if (typeof insertBotWebsocketResponse === 'function') {
+        insertBotWebsocketResponse(data.message);
+    } else {
+        console.error('insertBotWebsocketResponse function not found!');
+        console.log(data.message);
+    }
+});
+
+function insertUserPrompt() {
+    prompt = $('#prompt').val()
+
+    if (!prompt)
+        return
+
+    const subject = document.querySelector("#chat-history");
+    
+    injectHTML = `
+    <div class="chat-message user">
+      <div class="msg">`+ prompt + `</div>
+    </div>`;
+
+    subject.insertAdjacentHTML('beforeend', injectHTML);
+
+    scrollToBottom();
+}
+
+function insertBotPlaceholder() {
+    const subject = document.querySelector("#chat-history");
+    
+    injectHTML = `
+    <div class="chat-message chatbot response-target">
+        <div class="chat-loading-indicator-container">
+            <div class="msg"><img id="loading-indicator" class="htmx-indicator" src="/static/images/loading.svg"/></div>
+        </div>
+    </div>`;
+
+    subject.insertAdjacentHTML('beforeend', injectHTML);
+
+    scrollToBottom();    
+}
+
+function insertBotWebsocketResponse(response) {
+    const subject = document.querySelector("#chat-history");
+    
+    injectHTML = `
+    <div class="chat-message chatbot">
+        <div class="msg">`+response+`</div>
+    </div>`;
+
+    subject.insertAdjacentHTML('beforeend', injectHTML);
+
+    scrollToBottom();    
+}
+
+function scrollToBottom() {
+    $('#chat-history')[0].scrollTop = $('#chat-history')[0].scrollHeight;
+}
+
+function enableFormFields() {
+    $("#chat-form > input[type='text'], #chat-form > button").attr('disabled', false);    
+    $('#prompt').focus();
+}
+
+function disableFormFields() {
+    $("#chat-form > input[type='text'], #chat-form > button").attr('disabled', true);    
+}
+
+function showLoadingIndicator() {
+    $("#loading-indicator").css('opacity', '100%');
+}
+
+function removeLoadingIndicator() {
+    $('.chat-loading-indicator-container').remove();    
+    $('.response-target').removeClass('response-target');
+}
+
+// Audio helpers
+
 let mediaRecorder;
 let audioChunks = [];
-
-window.oncontextmenu = function() { return false; }
 
 async function startRecording(self, event) {
     if ("buttons" in event) {
@@ -54,7 +142,6 @@ function stopRecording(self, event) {
     };
 }
 
-
 function postRecodingCallback(response) {
     const divFragment = document.createRange().createContextualFragment(response);
     const subject = document.querySelector(".response-target");
@@ -64,68 +151,10 @@ function postRecodingCallback(response) {
     enableRecordButton();
 }
 
-function insertUserPrompt(prompt) {
-    if (!prompt)
-        prompt = $('#prompt').val()
-
-    if (!prompt)
-        return
-
-    const subject = document.querySelector("#chat-history");
-    
-    injectHTML = `
-    <div class="chat-message user">
-      <div class="msg">`+ prompt + `</div>
-    </div>`;
-
-    subject.insertAdjacentHTML('beforeend', injectHTML);
-
-    scrollToBottom();
-}
-
-function insertBotPlaceholder() {
-    const subject = document.querySelector("#chat-history");
-    
-    injectHTML = `
-    <div class="chat-message chatbot response-target">
-        <div class="chat-loading-indicator-container">
-            <div class="msg"><img id="loading-indicator" class="htmx-indicator" src="/static/images/loading.svg"/></div>
-        </div>
-    </div>`;
-
-    subject.insertAdjacentHTML('beforeend', injectHTML);
-
-    scrollToBottom();    
-}
-
-function scrollToBottom() {
-    $('#chat-history')[0].scrollTop = $('#chat-history')[0].scrollHeight;
-}
-
-function enableFormFields(focus=true) {
-    $("#chat-form > input[type='text'], #chat-form > button").attr('disabled', false);    
-    if(focus) {
-        $('#prompt').focus();
-    }
-}
-
-function disableFormFields() {
-    $("#chat-form > input[type='text'], #chat-form > button").attr('disabled', true);    
-}
-
 function enableRecordButton() {
     $("#talk-button").attr('disabled', false);
 }
 
 function disableRecordButton() {
     $("#talk-button").attr('disabled', true);    
-}
-
-function showLoadingIndicator() {
-    $("#loading-indicator").css('opacity', '100%');
-}
-
-function removeLoadingIndicator() {
-    $('.chat-loading-indicator-container').remove();    
-    $('.response-target').removeClass('response-target');
 }

@@ -41,7 +41,6 @@ resource "google_cloud_run_v2_service" "demo_service" {
   name     = var.service_name
   location = var.region
   ingress = "INGRESS_TRAFFIC_ALL"
-  depends_on = [google_vpc_access_connector.vpc_connector]
 
   template {
     containers {
@@ -54,6 +53,10 @@ resource "google_cloud_run_v2_service" "demo_service" {
             name  = "REGION"
             value = var.region
         }   
+        env {
+            name  = "FIRESTORE_DATABASE"
+            value = var.firestore_database
+        }
         env {
             name  = "DB_PASSWORD"
             value = var.db_password
@@ -72,11 +75,12 @@ resource "google_cloud_run_v2_service" "demo_service" {
         }
     }
     service_account = google_service_account.service_account.email
-    
+
     vpc_access {
         connector = google_vpc_access_connector.vpc_connector.id
         egress = "ALL_TRAFFIC"
     }      
+
   }
 }
 
@@ -153,9 +157,16 @@ resource "google_project_iam_member" "alloydb_user" {
   member  = "serviceAccount:${google_service_account.service_account.email}"
 }
 
+
 resource "google_project_iam_member" "vertex_ai_user" {
   project = var.project_id
   role    = "roles/aiplatform.user"
+  member  = "serviceAccount:${google_service_account.service_account.email}"
+}
+
+resource "google_project_iam_member" "firestore_user" {
+  project = var.project_id
+  role    = "roles/datastore.user"
   member  = "serviceAccount:${google_service_account.service_account.email}"
 }
 

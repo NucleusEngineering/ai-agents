@@ -28,7 +28,7 @@ services:
       container_name: pgadmin4_container
       restart: always
       ports:
-      - "8081:80"
+      - "8084:80"
       environment:
          PGADMIN_DEFAULT_EMAIL: google-noreply@google.com
          PGADMIN_DEFAULT_PASSWORD: postgres
@@ -47,9 +47,9 @@ services:
          PROJECT_ID: ${PROJECT_ID}
          GOOGLE_CLOUD_PROJECT: ${PROJECT_ID}
          GOOGLE_APPLICATION_CREDENTIALS: /tmp/credentials.json
-         FLASK_APP: main.py
+         FLASK_APP: app.py
       ports:
-         - "8080:8080"
+         - "8083:8080"
       volumes:
          - .:/app # Mount the current directory to /app
          - ~/.config/gcloud/application_default_credentials.json:/tmp/credentials.json   # Mount the credentials file (check whether you ran gcloud auth login)

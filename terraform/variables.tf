@@ -13,6 +13,11 @@ variable "service_name" {
   description = "Your Cloud Run service name"
 }
 
+variable "firestore_database" {
+  type = string
+  description = "Firestore database name"
+}
+
 variable "db_instance_name" {
   type = string
   description = "AlloyDB Instance name"

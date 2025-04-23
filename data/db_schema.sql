@@ -16,7 +16,7 @@ CREATE TYPE TransactionType AS ENUM ('purchase', 'refund');
 CREATE TYPE TicketType AS ENUM ('general', 'billing', 'account');
 
 CREATE TABLE users (
-  user_id SERIAL PRIMARY KEY,
+  user_id uuid PRIMARY KEY,
   name VARCHAR(255),
   email VARCHAR(255),
   password VARCHAR(64),
@@ -26,10 +26,7 @@ CREATE TABLE users (
 );
 
 INSERT INTO users (user_id, name, email, password, is_active, is_validated) VALUES
-(1,	'Test User 1',	'test-user-1@domain.tld',	encode(sha256('password'), 'hex'),	't',	't'),
-(2,	'Test User 2',	'test-user-2@domain.tld',	encode(sha256('password'), 'hex'),	't',	't'),
-(3,	'Test User 3',	'test-user-2@domain.tld',	encode(sha256('password'), 'hex'),	't',	't');
-
+('7608dc3f-d239-405c-a097-b152ab38a354',	'Test User 1',	'test-user-1@domain.tld',	encode(sha256('password'), 'hex'),	't',	't');
 
 CREATE TABLE available_games (
   game_id SERIAL PRIMARY KEY,
@@ -39,8 +36,7 @@ CREATE TABLE available_games (
 );
 
 INSERT INTO available_games (game_id, title, description, is_active) VALUES
-(1,	'Droid Shooter',	'Droid Shooter is a first of its kind global multiplayer demo game that shows off all the features of Google Cloud for Games.',	't'),
-(2,	'Cloud Royale',	'A brand new title in battle royale style that shows capabilities of massive scale and integration of Generative AI features into gaming mechanics.',	't');
+(1,	'Cloud Meow',	'Cloud Meow is a game about solving puzzles with help of google cloud.',	't');
 
 
 CREATE TABLE ingame_products (
@@ -53,10 +49,8 @@ CREATE TABLE ingame_products (
 );
 
 INSERT INTO ingame_products (product_id, game_id, product_title, product_description, product_price, is_product_active) VALUES
-(1,	1,	'Cloud Gem', 'Gem for in-game purchases', 1.23, 't'),
-(2,	1,	'Cloud Gold', 'Gold for weapon and armor boosting',	1.1, 't'),
-(3,	2,	'Cloud Gem', 'Gem for in-game purchases', 1.49, 't'),
-(4,	2,	'Cloud Gold', 'Gold for re-spawning credits and extra lives',	1.99, 't');
+(1,	1,	'Paw Token', 'Token to help you unlock a hint', 1.49, 't'),
+(2,	1,	'Poop token', 'Special token that allows yu to undo whenever you do a mistake',	1.99, 't');
 
 
 CREATE TABLE game_replays (
@@ -64,33 +58,16 @@ CREATE TABLE game_replays (
   game_id SERIAL REFERENCES available_games(game_id),
   winning_score NUMERIC,
   replay_url VARCHAR(2048),
-  winner_id SERIAL REFERENCES users(user_id),
+  winner_id uuid REFERENCES users(user_id),
   game_date DATE
 );
 
 INSERT INTO game_replays (replay_id, game_id, winning_score, replay_url, winner_id, game_date) VALUES
-(1,	1,	123, 'https://www.youtube.com/embed/Bqn3SNyjsSE', 2, CURRENT_DATE),
-(2,	2,	150, 'https://www.youtube.com/embed/3KtWfp0UopM', 3, CURRENT_DATE);
-
-CREATE TABLE character_personalization (
-  character_id SERIAL PRIMARY KEY,
-  user_id SERIAL REFERENCES users(user_id),
-  c1 VARCHAR(16),
-  c2 VARCHAR(16),
-  c3 VARCHAR(16),
-  c4 VARCHAR(16),
-  texture TEXT,
-  character_name VARCHAR(2048)
-);
-
-INSERT INTO character_personalization (character_id, user_id, c1, c2, c3, c4, texture, character_name) VALUES
-(1,	1,	'#CCCCCC', '#CCCCCC', '#CCCCCC', '#CCCCCC', '', 'Character A'),
-(2,	1,	'#CCCCCC', '#CCCCCC', '#CCCCCC', '#CCCCCC', '', 'Character B'),
-(3,	1,	'#CCCCCC', '#CCCCCC', '#CCCCCC', '#CCCCCC', '', 'Bugdroid');
+(1,	1,	123, 'https://www.youtube.com/embed/4D3X6Xl5c_Y', '7608dc3f-d239-405c-a097-b152ab38a354', CURRENT_DATE);
 
 CREATE TABLE user_orders (
   order_id SERIAL PRIMARY KEY,
-  user_id SERIAL REFERENCES users(user_id),
+  user_id uuid REFERENCES users(user_id),
   game_id SERIAL REFERENCES available_games(game_id),
   product_id SERIAL,
   total_price NUMERIC,
@@ -100,31 +77,26 @@ CREATE TABLE user_orders (
 );
 
 INSERT INTO public.user_orders(order_id, user_id, game_id, product_id, total_price, quantity, transaction_type, transaction_date) VALUES 
-(1, 1, 1, 1, 12.3, 10, 'purchase', CURRENT_DATE),
-(2, 1, 1, 2, 23.8, 20, 'purchase', CURRENT_DATE),
-(3, 1, 2, 3, 149, 100, 'purchase', CURRENT_DATE),
-(4, 1, 2, 4, 99.5, 50, 'purchase', CURRENT_DATE);
+(1, '7608dc3f-d239-405c-a097-b152ab38a354', 1, 1, 12.3, 10, 'purchase', CURRENT_DATE),
+(2, '7608dc3f-d239-405c-a097-b152ab38a354', 1, 2, 23.8, 20, 'purchase', CURRENT_DATE);
 
 CREATE TABLE user_games (
-  user_id SERIAL REFERENCES users(user_id),
+  user_id uuid REFERENCES users(user_id),
   game_id SERIAL REFERENCES available_games(game_id),
   purchase_date DATE,
   time_played NUMERIC
 );
 
 INSERT INTO user_games (user_id, game_id, purchase_date, time_played) VALUES
-(1,	1,	CURRENT_DATE, 5),
-(1,	2,	CURRENT_DATE, 10),
-(2,	1,	CURRENT_DATE, 7.5),
-(3,	1,	CURRENT_DATE, 2.5);
+('7608dc3f-d239-405c-a097-b152ab38a354',	1,	CURRENT_DATE, 100);
 
 CREATE TABLE user_tickets (
   ticket_id SERIAL PRIMARY KEY,
-  user_id SERIAL REFERENCES users(user_id),
+  user_id uuid REFERENCES users(user_id),
   ticket_type TicketType,
   message TEXT,
   created_at DATE
 );
 
 INSERT INTO user_tickets (user_id, ticket_type, message, created_at) VALUES
-(1,	'general', 'Just wanted to ask you about any other upcoming games. Thank you!',	CURRENT_DATE);
+('7608dc3f-d239-405c-a097-b152ab38a354',	'general', 'Just wanted to ask you about any other upcoming games. Thank you!',	CURRENT_DATE);
