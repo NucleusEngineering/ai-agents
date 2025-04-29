@@ -117,15 +117,6 @@ class User:
             )
         )        
 
-        fc_convert_avatar = types.FunctionDeclaration(
-            name='fc_convert_avatar',
-            description='Convert avatar to 3D model.',
-            parameters=types.Schema(
-                type='OBJECT',
-                properties={}
-            )
-        )        
-
         fc_show_my_model = types.FunctionDeclaration(
             name='fc_show_my_model',
             description='Show user\'s model / character on the screen.',

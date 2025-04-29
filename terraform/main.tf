@@ -77,7 +77,7 @@ resource "google_cloud_run_v2_service" "demo_service" {
     service_account = google_service_account.service_account.email
 
     vpc_access {
-        connector = google_vpc_access_connector.vpc_connector.id
+        connector = google_vpc_access_connector.my-connector1.id
         egress = "ALL_TRAFFIC"
     }      
 
@@ -111,7 +111,7 @@ resource "google_alloydb_instance" "db" {
 }
 
 # Network for AlloyDB
-resource "google_vpc_access_connector" "vpc_connector" {
+resource "google_vpc_access_connector" "my-connector1" {
   name         = "${var.service_name}-connector"
   region       = var.region
   network      = google_compute_network.db_network.name
